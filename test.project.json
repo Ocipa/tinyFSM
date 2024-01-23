@@ -1,0 +1,21 @@
+{
+    "name": "tinyFSM",
+    "tree": {
+        "$className": "DataModel",
+        "Players": {
+            "$className": "Players",
+            "$properties": {
+                "CharacterAutoLoads": false
+            }
+        },
+        "ReplicatedStorage": {
+            "$className": "ReplicatedStorage",
+            "Packages": {
+                "$path": "Packages",
+                "tinyFSM": {
+                    "$path": "default.project.json"
+                }
+            }
+        }
+    }
+}
