@@ -8,7 +8,7 @@
 ## Examples
 
 ```lua
--- file a
+-- file a (the state machine 'schema')
 local tinyFSM = require('path to tinyFSM')
 
 local toS2 = tinyFSM.transition.new "s2" {}
