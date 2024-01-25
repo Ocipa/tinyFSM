@@ -4,9 +4,8 @@ local Util = require(script.Parent.Util)
 local module = {}
 
 export type Options = {
-	guard: (() -> boolean)?,
-
 	-- TODO: add type to value
+	guard: ((value: any) -> (boolean, any?))?,
 	onTransition: ((value: any) -> ())?,
 }
 

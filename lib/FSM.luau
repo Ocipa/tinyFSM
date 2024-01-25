@@ -39,7 +39,16 @@ function module:getSequentStates()
 	local sequentStates = {}
 
 	for transitionNode, _ in currentNode.transitions do
-		local available = transitionNode.guard == nil or transitionNode.guard() == true
+		local available, newValue = true, nil
+
+		if transitionNode.guard ~= nil then
+			available, newValue = transitionNode.guard(self._value)
+
+			if newValue ~= nil then
+				self._value = newValue
+			end
+		end
+
 		sequentStates[transitionNode.key] = available
 	end
 
@@ -77,7 +86,15 @@ function module:getFirstSequentState()
 	local currentNode = self._nodes[self._currentKey]
 
 	for transitionNode, _ in currentNode.transitions do
-		local available = transitionNode.guard == nil or transitionNode.guard() == true
+		local available, newValue = true, nil
+
+		if transitionNode.guard ~= nil then
+			available, newValue = transitionNode.guard(self._value)
+
+			if newValue ~= nil then
+				self._value = newValue
+			end
+		end
 
 		if available then
 			return transitionNode.key, transitionNode

@@ -13,8 +13,8 @@ export type State = {
 export type Transition = {
 	key: string,
 
-	guard: (() -> boolean)?,
 	-- TODO: add type to value
+	guard: ((value: any) -> boolean)?,
 	onTransition: ((value: any) -> ())?,
 
 	[string]: nil,
