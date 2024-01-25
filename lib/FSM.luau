@@ -114,7 +114,7 @@ local function recursiveFindStateNodes(node: Types.State, _nodes: { [string]: Ty
 end
 
 local constructors = {
-	init = function(initialNode: Types.State, options: Options?)
+	init = function(initialNode: Types.State, _options: Options?)
 		local nodes = recursiveFindStateNodes(initialNode)
 
 		return {

@@ -1,4 +1,5 @@
 local Types = require(script.Parent.Types)
+
 local module = {}
 
 local usedKeys = {} :: { [string]: Types.State }

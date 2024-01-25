@@ -9,20 +9,16 @@ export type Options = {
 	onTransition: (() -> ())?,
 }
 
-type TransitionBuilder = (options: Options) -> Types.Transition
+function module.new(targetKey: string, options: Options?): Types.Transition
+	local state = Sift.Dictionary.freezeDeep({
+		key = targetKey,
 
-function module.new(targetKey: string): TransitionBuilder
-	return function(options)
-		local state = Sift.Dictionary.freezeDeep({
-			key = targetKey,
+		guard = if options then options.guard else nil,
 
-			guard = if options then options.guard else nil,
+		onTransition = if options then options.onTransition else nil,
+	})
 
-			onTransition = if options then options.onTransition else nil,
-		})
-
-		return state
-	end
+	return state
 end
 
 return module
