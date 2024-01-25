@@ -1,6 +1,6 @@
-local Sift = require(script.Parent.Parent.Sift)
 local NodeKeys = require(script.Parent.NodeKeys)
 local Types = require(script.Parent.Types)
+local Util = require(script.Parent.Util)
 
 local module = {}
 
@@ -17,7 +17,7 @@ function module.new(key: string, options: Options?): Types.State
 		error(`State key '{key}' is already used.`)
 	end
 
-	local node = Sift.Dictionary.freezeDeep({
+	local node = Util.freezeDeep({
 		key = key,
 
 		-- TODO: implement experimental state data?
@@ -27,7 +27,7 @@ function module.new(key: string, options: Options?): Types.State
 		onLeave = if options then options.onLeave else nil,
 		onStep = if options then options.onStep else nil,
 
-		transitions = if options and options.transitions then Sift.Array.toSet(options.transitions) else {},
+		transitions = if options and options.transitions then Util.toSet(options.transitions) else {} :: any,
 	})
 
 	NodeKeys.addKey(key, node)

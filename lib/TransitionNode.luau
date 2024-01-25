@@ -1,5 +1,5 @@
-local Sift = require(script.Parent.Parent.Sift)
 local Types = require(script.Parent.Types)
+local Util = require(script.Parent.Util)
 
 local module = {}
 
@@ -10,7 +10,7 @@ export type Options = {
 }
 
 function module.new(targetKey: string, options: Options?): Types.Transition
-	local state = Sift.Dictionary.freezeDeep({
+	local state = Util.freezeDeep({
 		key = targetKey,
 
 		guard = if options then options.guard else nil,

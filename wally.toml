@@ -14,4 +14,3 @@ exclude = [
 ]
 
 [dependencies]
-Sift = "csqrl/sift@0.0.8"
