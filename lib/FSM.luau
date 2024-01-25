@@ -82,6 +82,10 @@ function module:_setState(key, transition)
 	end
 end
 
+function module:setValue(value)
+	self._value = if typeof(value) == "function" then (value :: any)(self._value) else value
+end
+
 function module:getFirstSequentState()
 	local currentNode = self._nodes[self._currentKey]
 
@@ -163,16 +167,16 @@ local constructors = {
 }
 
 type Attributes<T> = {
-	_value: T?,
 	valueNode: Types.Value<T>?,
 }
 
 type _Attributes<T> = Attributes<T> & {
 	_currentKey: string,
 	_nodes: { [string]: Types.State },
+	_value: T?,
 }
 
-type Impl<T> = {
+type Impl<T, S> = {
 	step: (self: T) -> (),
 	serialize: (self: T) -> string,
 
@@ -180,18 +184,19 @@ type Impl<T> = {
 	getFirstSequentState: (self: T) -> (string?, Types.Transition?),
 
 	forceSetState: (self: T, key: string) -> (),
+	setValue: (self: T, value: S | (value: S?) -> S) -> (),
 
 	destroy: (self: T) -> (),
 }
 
-type _Impl<T> = Impl<_FSM<T>> & {
+type _Impl<T> = Impl<_FSM<T>, T> & {
 	__index: _Impl<T>,
 
 	_setState: (self: _FSM<T>, key: string, transition: Types.Transition?) -> (),
 	_recursiveStepThroughNodes: (self: _FSM<T>, count: number) -> (),
 }
 
-export type FSM<T> = Attributes<T> & Impl<FSM<T>>
+export type FSM<T> = Attributes<T> & Impl<FSM<T>, T>
 type _FSM<T> = typeof(setmetatable({} :: _Attributes<T>, {} :: _Impl<T>)) & _Impl<T>
 
 return constructors
