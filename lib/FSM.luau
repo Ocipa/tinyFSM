@@ -1,9 +1,14 @@
 local NodeKeys = require(script.Parent.NodeKeys)
 local Types = require(script.Parent.Types)
+local Util = require(script.Parent.Util)
 
-export type Options = {}
+export type Options<T> = {
+	value: Types.Value<T>?,
 
-local module: _Impl = {} :: _Impl
+	[string]: nil,
+}
+
+local module: _Impl<unknown> = {} :: _Impl<unknown>
 module.__index = module
 
 function module:_recursiveStepThroughNodes(count)
@@ -57,7 +62,7 @@ function module:_setState(key, transition)
 	end
 
 	if transition and transition.onTransition then
-		transition.onTransition()
+		transition.onTransition(self._value)
 	end
 
 	self._currentKey = key
@@ -114,20 +119,25 @@ local function recursiveFindStateNodes(node: Types.State, _nodes: { [string]: Ty
 end
 
 local constructors = {
-	init = function(initialNode: Types.State, _options: Options?)
+	init = function<T>(initialNode: Types.State, options: Options<T>?)
 		local nodes = recursiveFindStateNodes(initialNode)
 
 		return {
-			new = function(): FSM
-				local self: _Attributes = {
+			new = function(): FSM<T>
+				local valueNode = if options and options.value then Util.freezeDeep(options.value) else nil
+
+				local self: _Attributes<T> = {
 					_currentKey = initialNode.key,
 					_nodes = nodes,
+
+					_value = if valueNode then Util.copyDeep(valueNode.initialValue) else nil,
+					valueNode = valueNode,
 				}
 
 				setmetatable(self, module)
 				return self :: any
 			end,
-			fromSerialized = function(): FSM
+			fromSerialized = function(): FSM<T>
 				-- TODO: implement
 				return nil :: any
 			end,
@@ -135,9 +145,12 @@ local constructors = {
 	end,
 }
 
-type Attributes = {}
+type Attributes<T> = {
+	_value: T?,
+	valueNode: Types.Value<T>?,
+}
 
-type _Attributes = Attributes & {
+type _Attributes<T> = Attributes<T> & {
 	_currentKey: string,
 	_nodes: { [string]: Types.State },
 }
@@ -154,14 +167,14 @@ type Impl<T> = {
 	destroy: (self: T) -> (),
 }
 
-type _Impl = Impl<_FSM> & {
-	__index: _Impl,
+type _Impl<T> = Impl<_FSM<T>> & {
+	__index: _Impl<T>,
 
-	_setState: (self: _FSM, key: string, transition: Types.Transition?) -> (),
-	_recursiveStepThroughNodes: (self: _FSM, count: number) -> (),
+	_setState: (self: _FSM<T>, key: string, transition: Types.Transition?) -> (),
+	_recursiveStepThroughNodes: (self: _FSM<T>, count: number) -> (),
 }
 
-export type FSM = Attributes & Impl<FSM>
-type _FSM = typeof(setmetatable({} :: _Attributes, {} :: _Impl)) & _Impl
+export type FSM<T> = Attributes<T> & Impl<FSM<T>>
+type _FSM<T> = typeof(setmetatable({} :: _Attributes<T>, {} :: _Impl<T>)) & _Impl<T>
 
 return constructors

@@ -6,7 +6,8 @@ local module = {}
 export type Options = {
 	guard: (() -> boolean)?,
 
-	onTransition: (() -> ())?,
+	-- TODO: add type to value
+	onTransition: ((value: any) -> ())?,
 }
 
 function module.new(targetKey: string, options: Options?): Types.Transition

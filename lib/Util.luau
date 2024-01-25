@@ -1,5 +1,22 @@
 local module = {}
 
+-- from Sift https://github.com/cxmeel/sift/blob/main/src/Dictionary/copyDeep.lua
+function module.copyDeep<T>(dictionary: T): T
+	if typeof(dictionary) ~= "table" then
+		return dictionary
+	end
+
+	local new = table.clone(dictionary)
+
+	for key, value in pairs(dictionary) do
+		if type(value) == "table" then
+			new[key] = module.copyDeep(value)
+		end
+	end
+
+	return new :: any
+end
+
 -- from Sift https://github.com/cxmeel/sift/blob/main/src/Dictionary/freezeDeep.lua
 function module.freezeDeep<T>(dictionary: T & {}): T
 	local result = {}

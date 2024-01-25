@@ -20,9 +20,6 @@ function module.new(key: string, options: Options?): Types.State
 	local node = Util.freezeDeep({
 		key = key,
 
-		-- TODO: implement experimental state data?
-		-- data = {} :: any,
-
 		onEntry = if options then options.onEntry else nil,
 		onLeave = if options then options.onLeave else nil,
 		onStep = if options then options.onStep else nil,

@@ -2,15 +2,19 @@ local FSM = require(script.FSM)
 local StateNode = require(script.StateNode)
 local TransitionNode = require(script.TransitionNode)
 local Types = require(script.Types)
+local ValueNode = require(script.ValueNode)
 
-export type FSM = FSM.FSM
-export type Options = FSM.Options
+export type FSM<T> = FSM.FSM<T>
+export type Options<T> = FSM.Options<T>
 
 export type State = Types.State
 export type StateOptions = StateNode.Options
 
 export type Transition = Types.Transition
 export type TransitionOptions = TransitionNode.Options
+
+export type Value<T> = Types.Value<T>
+export type ValueOptions<T> = ValueNode.Options<T>
 
 return {
 	init = FSM.init,
@@ -21,5 +25,9 @@ return {
 
 	transition = {
 		new = TransitionNode.new,
+	},
+
+	value = {
+		new = ValueNode.new,
 	},
 }
