@@ -3,9 +3,14 @@
 registry = "test"
 
 [[package]]
+name = "data-oriented-house/lemonsignal"
+version = "1.9.0"
+dependencies = []
+
+[[package]]
 name = "ocipa/tiny-fsm"
 version = "0.3.0"
-dependencies = [["TestEz", "roblox/testez@0.4.1"]]
+dependencies = [["Signal", "data-oriented-house/lemonsignal@1.9.0"], ["TestEz", "roblox/testez@0.4.1"]]
 
 [[package]]
 name = "roblox/testez"

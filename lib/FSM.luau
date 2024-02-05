@@ -1,3 +1,4 @@
+local Signal = require(script.Parent.Parent.Signal)
 local NodeKeys = require(script.Parent.NodeKeys)
 local Types = require(script.Parent.Types)
 local Util = require(script.Parent.Util)
@@ -112,6 +113,8 @@ function module:_setState(key, transition)
 	if newNode and newNode.onEntry then
 		newNode.onEntry()
 	end
+
+	self.changed:Fire(self._currentKey, currentNode.key)
 end
 
 function module:setValue(value)
@@ -169,6 +172,8 @@ local initializers = {
 
 					_value = if valueNode then Util.copyDeep(valueNode.initialValue) else nil,
 					valueNode = valueNode,
+
+					changed = Signal.new(),
 				}
 
 				setmetatable(self, module)
@@ -188,6 +193,8 @@ local initializers = {
 
 type Attributes<T> = {
 	valueNode: Types.Value<T>?,
+
+	changed: Signal.Signal<string, string>,
 }
 
 type _Attributes<T> = Attributes<T> & {
