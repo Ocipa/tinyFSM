@@ -2,6 +2,7 @@
 local HttpService = game:GetService("HttpService")
 
 local TinyFSM = require(script.Parent)
+local ValueNode = require(script.Parent.ValueNode)
 
 return function()
 	describe(":step", function()
@@ -20,6 +21,27 @@ return function()
 			expect((fsm :: any)._currentKey).to.equal(`Idle{i}`)
 			fsm:step()
 			expect((fsm :: any)._currentKey).to.equal(`Jumping{i}`)
+		end)
+
+		it("mutates value", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			-- TODO: fix needing to cast this
+			local val = TinyFSM.value.new({ initialValue = 2 } :: ValueNode.Options<number>)
+
+			local idle = TinyFSM.state.new(`Idle{i}`, {
+				value = val :: any,
+				onStep = function(value)
+					return (value :: number) - 1
+				end,
+			})
+
+			local fsm = TinyFSM.init(idle).new()
+
+			fsm:step()
+			expect((fsm :: any)._value).to.equal(1)
 		end)
 	end)
 
@@ -106,6 +128,48 @@ return function()
 			local fsm = TinyFSM.init(idle).new()
 
 			expect(fsm:tryOption("invalidTransition")).to.equal(false)
+		end)
+
+		it("sets a new value", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			-- TODO: fix needing to cast this
+			local val = TinyFSM.value.new({ initialValue = 50 } :: ValueNode.Options<number>)
+
+			local t1 = TinyFSM.transition.new(`Jumping{i}`)
+
+			local idle = TinyFSM.state.new(`Idle{i}`, { transitions = { toRunning = t1 } })
+			TinyFSM.state.new(`Jumping{i}`, {
+				value = val :: any,
+			})
+
+			local fsm = TinyFSM.init(idle).new()
+
+			fsm:tryOption("toRunning", 25)
+			expect((fsm :: any)._value).to.equal(25)
+		end)
+
+		it("uses initial value", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			-- TODO: fix needing to cast this
+			local val = TinyFSM.value.new({ initialValue = 50 } :: ValueNode.Options<number>)
+
+			local t1 = TinyFSM.transition.new(`Jumping{i}`)
+
+			local idle = TinyFSM.state.new(`Idle{i}`, { transitions = { toRunning = t1 } })
+			TinyFSM.state.new(`Jumping{i}`, {
+				value = val :: any,
+			})
+
+			local fsm = TinyFSM.init(idle).new()
+
+			fsm:tryOption("toRunning")
+			expect((fsm :: any)._value).to.equal(50)
 		end)
 	end)
 

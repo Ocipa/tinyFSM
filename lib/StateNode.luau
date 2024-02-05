@@ -7,7 +7,11 @@ local module = {}
 export type Options = {
 	onEntry: (() -> ())?,
 	onLeave: (() -> ())?,
-	onStep: (() -> ())?,
+	-- TODO: figure out if onStep value type can be inferred
+	onStep: ((value: unknown) -> unknown)?,
+
+	-- TODO: figure out if value generic type can be inferred
+	value: Types.Value<unknown>?,
 
 	transitions: { [number | string]: Types.Transition }?,
 }
@@ -23,6 +27,8 @@ function module.new(key: string, options: Options?): Types.State
 		onEntry = if options then options.onEntry else nil,
 		onLeave = if options then options.onLeave else nil,
 		onStep = if options then options.onStep else nil,
+
+		value = if options then options.value else nil,
 
 		transitions = if options and options.transitions then options.transitions else {} :: any,
 	})

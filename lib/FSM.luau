@@ -4,8 +4,6 @@ local Types = require(script.Parent.Types)
 local Util = require(script.Parent.Util)
 
 export type Options<T> = {
-	value: Types.Value<T>?,
-
 	[string]: nil,
 }
 
@@ -31,6 +29,11 @@ function module:_recursiveStepThroughNodes(count)
 end
 
 function module:step()
+	local currentNode = self._nodes[self._currentKey]
+	if currentNode and currentNode.onStep then
+		self._value = currentNode.onStep(self._value)
+	end
+
 	self:_recursiveStepThroughNodes(0)
 end
 
@@ -76,7 +79,7 @@ function module:getAllOptions()
 	return options
 end
 
-function module:tryOption(key: string)
+function module:tryOption(key, value)
 	local node = self._nodes[self._currentKey]
 
 	local transition = node.transitions[key]
@@ -84,7 +87,7 @@ function module:tryOption(key: string)
 		return false
 	end
 
-	self:_setState(transition.key, transition)
+	self:_setState(transition.key, transition, value)
 	return true
 end
 
@@ -97,14 +100,14 @@ function module:setState(key: string)
 	self:_setState(key)
 end
 
-function module:_setState(key, transition)
+function module:_setState(key, transition, value)
 	local currentNode = self._nodes[self._currentKey]
 	if currentNode and currentNode.onLeave then
 		currentNode.onLeave()
 	end
 
 	if transition and transition.onTransition then
-		transition.onTransition(self._value)
+		transition.onTransition()
 	end
 
 	self._currentKey = key
@@ -114,11 +117,14 @@ function module:_setState(key, transition)
 		newNode.onEntry()
 	end
 
-	self.changed:Fire(self._currentKey, currentNode.key)
-end
+	self._value = value
+	if self._value == nil and newNode.value then
+		local initialValue = newNode.value.initialValue
 
-function module:setValue(value)
-	self._value = if typeof(value) == "function" then (value :: any)(self._value) else value
+		self._value = Util.copyDeep(initialValue)
+	end
+
+	self.changed:Fire(self._currentKey, currentNode.key)
 end
 
 function module:serialize()
@@ -164,14 +170,14 @@ local initializers = {
 		local constructors
 		constructors = {
 			new = function(): FSM<T>
-				local valueNode = if options and options.value then Util.freezeDeep(options.value) else nil
+				local valueNode = if initialNode then initialNode.value else nil
 
 				local self: _Attributes<T> = {
 					_currentKey = initialNode.key,
 					_nodes = nodes,
 
-					_value = if valueNode then Util.copyDeep(valueNode.initialValue) else nil,
-					valueNode = valueNode,
+					-- TODO: remove this any
+					_value = if valueNode then Util.copyDeep(valueNode.initialValue :: any) else nil,
 
 					changed = Signal.new(),
 				}
@@ -192,8 +198,6 @@ local initializers = {
 }
 
 type Attributes<T> = {
-	valueNode: Types.Value<T>?,
-
 	changed: Signal.Signal<string, string>,
 }
 
@@ -203,14 +207,14 @@ type _Attributes<T> = Attributes<T> & {
 	_value: T?,
 }
 
+-- TODO: fix the type of transition node guards,
+-- they should get passed the value S?
 type Impl<T, S> = {
 	step: (self: T) -> (),
 
 	getAllOptions: (self: T) -> { [string]: boolean },
-	tryOption: (self: T, key: string) -> boolean,
-
+	tryOption: (self: T, key: string, value: S?) -> boolean,
 	setState: (self: T, key: string) -> (),
-	setValue: (self: T, value: S | (value: S?) -> S) -> (),
 
 	serialize: (self: T) -> string,
 	applySerialization: (self: T, serialized: string) -> (),
@@ -221,7 +225,7 @@ type Impl<T, S> = {
 type _Impl<T> = Impl<_FSM<T>, T> & {
 	__index: _Impl<T>,
 
-	_setState: (self: _FSM<T>, key: string, transition: Types.Transition?) -> (),
+	_setState: (self: _FSM<T>, key: string, transition: Types.Transition?, value: T?) -> (),
 	_recursiveStepThroughNodes: (self: _FSM<T>, count: number) -> (),
 	_getFirstStepableOption: (self: _FSM<T>) -> Types.Transition?,
 }

@@ -4,9 +4,9 @@ local Util = require(script.Parent.Util)
 local module = {}
 
 export type Options = {
-	-- TODO: add type to value
-	guard: ((value: any) -> (boolean, any?))?,
-	onTransition: ((value: any) -> ())?,
+	-- TODO: figure out if guard value type can be inferred
+	guard: ((value: unknown) -> boolean)?,
+	onTransition: (() -> ())?,
 }
 
 function module.new(targetKey: string, options: Options?): Types.Transition
