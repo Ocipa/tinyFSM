@@ -5,7 +5,7 @@ export type State = {
 	onLeave: (() -> ())?,
 	onStep: (() -> ())?,
 
-	transitions: { [Transition]: true },
+	transitions: { [number | string]: Transition },
 
 	[string]: nil,
 }

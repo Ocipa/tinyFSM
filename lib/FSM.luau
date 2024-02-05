@@ -12,19 +12,19 @@ local module: _Impl<unknown> = {} :: _Impl<unknown>
 module.__index = module
 
 function module:_recursiveStepThroughNodes(count)
-	if count > 512 then
+	if count > 128 then
 		warn(
-			"Attempted to step through more than 512 state nodes. This may "
-				.. "be caused by circular transitions, if so, this can be "
-				.. "fixed by making them not circular, or by changing the "
-				.. "transition guards."
+			"Attempted to step through more than 128 state nodes in a single "
+				.. "step. This may be caused by circular transitions, if so, "
+				.. "this can be fixed by making them not circular, or by "
+				.. "changing the transition guards."
 		)
 		return
 	end
 
-	local sequentState, transition = self:getFirstSequentState()
-	if sequentState then
-		self:_setState(sequentState, transition)
+	local transition = self:_getFirstStepableOption()
+	if transition then
+		self:_setState(transition.key, transition)
 		self:_recursiveStepThroughNodes(count + 1)
 	end
 end
@@ -33,29 +33,61 @@ function module:step()
 	self:_recursiveStepThroughNodes(0)
 end
 
-function module:getSequentStates()
+function module:_getFirstStepableOption()
 	local currentNode = self._nodes[self._currentKey]
 
-	local sequentStates = {}
-
-	for transitionNode, _ in currentNode.transitions do
-		local available, newValue = true, nil
+	for _, transitionNode in ipairs(currentNode.transitions :: { Types.Transition }) do
+		local available = true
 
 		if transitionNode.guard ~= nil then
-			available, newValue = transitionNode.guard(self._value)
-
-			if newValue ~= nil then
-				self._value = newValue
-			end
+			available = transitionNode.guard(self._value)
 		end
 
-		sequentStates[transitionNode.key] = available
+		if available then
+			return transitionNode
+		end
 	end
 
-	return sequentStates
+	return nil
 end
 
-function module:forceSetState(key: string)
+function module:getAllOptions()
+	local options = {}
+
+	local currentNode = self._nodes[self._currentKey]
+	local lastKey: any = if #currentNode.transitions == 0 then nil else #currentNode.transitions
+
+	repeat
+		local key, node = next(currentNode.transitions, lastKey)
+		lastKey = key
+
+		if node then
+			local available = true
+
+			if node.guard ~= nil then
+				available = node.guard(self._value)
+			end
+
+			options[key :: string] = available
+		end
+	until not lastKey
+
+	return options
+end
+
+function module:tryOption(key: string)
+	local node = self._nodes[self._currentKey]
+
+	local transition = node.transitions[key]
+	if not transition then
+		return false
+	end
+
+	self:_setState(transition.key, transition)
+	return true
+end
+
+function module:setState(key: string)
 	local node = self._nodes[key]
 	if not node then
 		error(`Attempted to set state to '{key}' that does not exist`)
@@ -86,31 +118,14 @@ function module:setValue(value)
 	self._value = if typeof(value) == "function" then (value :: any)(self._value) else value
 end
 
-function module:getFirstSequentState()
-	local currentNode = self._nodes[self._currentKey]
-
-	for transitionNode, _ in currentNode.transitions do
-		local available, newValue = true, nil
-
-		if transitionNode.guard ~= nil then
-			available, newValue = transitionNode.guard(self._value)
-
-			if newValue ~= nil then
-				self._value = newValue
-			end
-		end
-
-		if available then
-			return transitionNode.key, transitionNode
-		end
-	end
-
-	return nil, nil
-end
-
 function module:serialize()
 	-- TODO: implement
-	return ""
+	error("serialize is not implemented")
+end
+
+function module:applySerialization()
+	-- TODO: implement
+	error("applySerialization is not implemented")
 end
 
 local function recursiveFindStateNodes(node: Types.State, _nodes: { [string]: Types.State }?): { [string]: Types.State }
@@ -120,18 +135,18 @@ local function recursiveFindStateNodes(node: Types.State, _nodes: { [string]: Ty
 	end
 
 	if node.transitions then
-		for i, _ in node.transitions do
-			if nodes[i.key] then
+		for _, transitionNode in node.transitions do
+			if nodes[transitionNode.key] then
 				continue
 			end
 
-			local nodeOfKey = NodeKeys.getNodeFromKey(i.key)
+			local nodeOfKey = NodeKeys.getNodeFromKey(transitionNode.key)
 			if not nodeOfKey then
 				-- TODO: error/warn?
 				continue
 			end
 
-			nodes[i.key] = nodeOfKey
+			nodes[transitionNode.key] = nodeOfKey
 			recursiveFindStateNodes(nodeOfKey, nodes)
 		end
 	end
@@ -139,11 +154,12 @@ local function recursiveFindStateNodes(node: Types.State, _nodes: { [string]: Ty
 	return nodes
 end
 
-local constructors = {
+local initializers = {
 	init = function<T>(initialNode: Types.State, options: Options<T>?)
 		local nodes = recursiveFindStateNodes(initialNode)
 
-		return {
+		local constructors
+		constructors = {
 			new = function(): FSM<T>
 				local valueNode = if options and options.value then Util.freezeDeep(options.value) else nil
 
@@ -158,11 +174,15 @@ local constructors = {
 				setmetatable(self, module)
 				return self :: any
 			end,
-			fromSerialized = function(): FSM<T>
-				-- TODO: implement
-				return nil :: any
+			fromSerialized = function(serialized: string): FSM<T>
+				local fsm = constructors.new()
+				fsm:applySerialization(serialized)
+
+				return fsm :: FSM<T>
 			end,
 		}
+
+		return constructors
 	end,
 }
 
@@ -178,13 +198,15 @@ type _Attributes<T> = Attributes<T> & {
 
 type Impl<T, S> = {
 	step: (self: T) -> (),
-	serialize: (self: T) -> string,
 
-	getSequentStates: (self: T) -> { [string]: boolean },
-	getFirstSequentState: (self: T) -> (string?, Types.Transition?),
+	getAllOptions: (self: T) -> { [string]: boolean },
+	tryOption: (self: T, key: string) -> boolean,
 
-	forceSetState: (self: T, key: string) -> (),
+	setState: (self: T, key: string) -> (),
 	setValue: (self: T, value: S | (value: S?) -> S) -> (),
+
+	serialize: (self: T) -> string,
+	applySerialization: (self: T, serialized: string) -> (),
 
 	destroy: (self: T) -> (),
 }
@@ -194,9 +216,10 @@ type _Impl<T> = Impl<_FSM<T>, T> & {
 
 	_setState: (self: _FSM<T>, key: string, transition: Types.Transition?) -> (),
 	_recursiveStepThroughNodes: (self: _FSM<T>, count: number) -> (),
+	_getFirstStepableOption: (self: _FSM<T>) -> Types.Transition?,
 }
 
 export type FSM<T> = Attributes<T> & Impl<FSM<T>, T>
 type _FSM<T> = typeof(setmetatable({} :: _Attributes<T>, {} :: _Impl<T>)) & _Impl<T>
 
-return constructors
+return initializers

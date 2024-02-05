@@ -12,10 +12,19 @@
             "$className": "ReplicatedStorage",
             "Packages": {
                 "$className": "Folder",
+                "$path": "Packages",
                 "tinyFSM": {
                     "$path": "default.project.json"
                 }
+            },
+            "DevPackages": {
+                "$className": "Folder",
+                "$path": "DevPackages"
             }
+        },
+        "ServerScriptService": {
+            "$className": "ServerScriptService",
+            "$path": "test"
         }
     }
 }

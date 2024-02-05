@@ -9,7 +9,7 @@ export type Options = {
 	onLeave: (() -> ())?,
 	onStep: (() -> ())?,
 
-	transitions: { Types.Transition }?,
+	transitions: { [number | string]: Types.Transition }?,
 }
 
 function module.new(key: string, options: Options?): Types.State
@@ -24,7 +24,7 @@ function module.new(key: string, options: Options?): Types.State
 		onLeave = if options then options.onLeave else nil,
 		onStep = if options then options.onStep else nil,
 
-		transitions = if options and options.transitions then Util.toSet(options.transitions) else {} :: any,
+		transitions = if options and options.transitions then options.transitions else {} :: any,
 	})
 
 	NodeKeys.addKey(key, node)

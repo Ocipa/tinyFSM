@@ -4,5 +4,10 @@ registry = "test"
 
 [[package]]
 name = "ocipa/tiny-fsm"
-version = "0.1.0"
+version = "0.3.0"
+dependencies = [["TestEz", "roblox/testez@0.4.1"]]
+
+[[package]]
+name = "roblox/testez"
+version = "0.4.1"
 dependencies = []

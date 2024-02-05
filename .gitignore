@@ -1,10 +1,14 @@
-# Project place file
+# Roblox Studio place files
 /*.rbxl
 /*.rbxlx
 
 # Roblox Studio lock files
 /*.rbxl.lock
 /*.rbxlx.lock
+
+# Roblox model files
+/*.rbxm
+/*.rbxmx
 
 /Packages
 /DevPackages

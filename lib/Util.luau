@@ -38,7 +38,7 @@ end
 function module.toSet<T>(array: { T }): { [T]: true }
 	local set: { [T]: true } = {}
 
-	for _, value in ipairs(array) do
+	for _, value in array do
 		set[value] = true
 	end
 
