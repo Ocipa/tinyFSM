@@ -12,3 +12,7 @@
 
 /Packages
 /DevPackages
+
+# Wally package test files
+/tinyFSM
+/*.tgz

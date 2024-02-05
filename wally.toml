@@ -10,7 +10,8 @@ realm = "shared"
 exclude = [
     "*.spec.lua", "*.spec.luau", "README.md", "assets",
     ".luaurc", ".gitignore", "aftman.toml", "selene.toml",
-    "test.project.json", "sourcemap.json", ".vscode"
+    "test.project.json", "sourcemap.json", ".vscode",
+    "docs", "test", "*.rbxl*", "*.rbxm*", "*.tgz", "tinyFSM"
 ]
 
 [dependencies]
