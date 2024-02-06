@@ -53,6 +53,33 @@ return function()
 		-- at the time of writing, a test for this would be pointless
 	end)
 
+	describe(":isCurrentKey", function()
+		it("checks state key", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local s1 = TinyFSM.state.new(`S1{i}`, {})
+
+			local fsm = TinyFSM.init(s1).new()
+			expect(fsm:isCurrentKey(`S1{i}`)).to.equal(true)
+			expect(fsm:isCurrentKey("aaaa")).to.equal(false)
+		end)
+
+		it("checks state alias", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local s1 = TinyFSM.state.new(`S1{i}`, { alias = { "123", "sss" } })
+
+			local fsm = TinyFSM.init(s1).new()
+			expect(fsm:isCurrentKey("123")).to.equal(true)
+			expect(fsm:isCurrentKey("sss")).to.equal(true)
+			expect(fsm:isCurrentKey("aaaa")).to.equal(false)
+		end)
+	end)
+
 	describe(":setValue", function()
 		-- at the time of writing, a test for this would be pointless
 	end)

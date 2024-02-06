@@ -148,6 +148,19 @@ function module:getCurrentKey()
 	return self._currentKey
 end
 
+function module:isCurrentKey(key)
+	if key == self._currentKey then
+		return true
+	end
+
+	local currentNode = self._nodes[self._currentKey]
+	if not currentNode.alias then
+		return false
+	end
+
+	return currentNode.alias[key] == true
+end
+
 function module:setValue(value)
 	self._value = value
 end
@@ -244,6 +257,7 @@ type Impl<T, S> = {
 
 	setState: (self: T, key: string) -> (),
 	getCurrentKey: (self: T) -> string,
+	isCurrentKey: (self: T, key: string) -> boolean,
 	setValue: (self: T, value: S) -> (),
 
 	serialize: (self: T) -> string,

@@ -5,6 +5,8 @@ local Util = require(script.Parent.Util)
 local module = {}
 
 export type Options = {
+	alias: { string }?,
+
 	onEntry: (() -> ())?,
 	onLeave: (() -> ())?,
 	-- TODO: figure out if onStep value type can be inferred
@@ -29,6 +31,7 @@ function module.new(key: string, options: Options?): Types.State
 
 	local node = Util.freezeDeep({
 		key = key,
+		alias = if options and options.alias then Util.toSet(options.alias) else nil,
 
 		onEntry = if options then options.onEntry else nil,
 		onLeave = if options then options.onLeave else nil,

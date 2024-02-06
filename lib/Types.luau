@@ -1,5 +1,6 @@
 export type State = {
 	key: string,
+	alias: { [string]: true }?,
 
 	onEntry: (() -> ())?,
 	onLeave: (() -> ())?,
