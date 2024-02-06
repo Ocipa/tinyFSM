@@ -127,6 +127,10 @@ function module:_setState(key, transition, value)
 	self.changed:Fire(self._currentKey, currentNode.key)
 end
 
+function module:setValue(value)
+	self._value = value
+end
+
 function module:serialize()
 	-- TODO: implement
 	error("serialize is not implemented")
@@ -214,7 +218,9 @@ type Impl<T, S> = {
 
 	getAllOptions: (self: T) -> { [string]: boolean },
 	tryOption: (self: T, key: string, value: S?) -> boolean,
+
 	setState: (self: T, key: string) -> (),
+	setValue: (self: T, value: S) -> (),
 
 	serialize: (self: T) -> string,
 	applySerialization: (self: T, serialized: string) -> (),

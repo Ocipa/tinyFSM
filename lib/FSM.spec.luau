@@ -49,6 +49,24 @@ return function()
 		-- TODO: :step tests
 	end)
 
+	describe(":setValue", function()
+		it("sets the value", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			-- TODO: fix needing to cast this
+			local val = TinyFSM.value.new({ initialValue = 2 } :: ValueNode.Options<number>)
+			local idle = TinyFSM.state.new(`Idle{i}`, { value = val :: any })
+
+			local fsm = TinyFSM.init(idle).new()
+
+			expect((fsm :: any)._value).to.equal(2)
+			fsm:setValue(5)
+			expect((fsm :: any)._value).to.equal(5)
+		end)
+	end)
+
 	describe(":getAllOptions", function()
 		it("gets only named options", function()
 			-- tinyFSM expects the key of every state to be unique,
