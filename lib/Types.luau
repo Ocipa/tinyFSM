@@ -4,10 +4,10 @@ export type State = {
 	onEntry: (() -> ())?,
 	onLeave: (() -> ())?,
 	-- TODO: figure out if onStep value type can be inferred
-	onStep: ((value: unknown) -> unknown)?,
+	onStep: ((value: any) -> any)?,
 
 	-- TODO: figure out if value generic type can be inferred
-	value: Value<unknown>?,
+	value: Value<any>?,
 
 	stepThrough: boolean,
 
@@ -20,7 +20,7 @@ export type Transition = {
 	key: string,
 
 	-- TODO: figure out if guard value type can be inferred
-	guard: ((value: unknown) -> boolean)?,
+	guard: ((value: any) -> boolean)?,
 	onTransition: (() -> ())?,
 
 	[string]: nil,

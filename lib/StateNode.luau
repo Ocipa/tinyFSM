@@ -8,10 +8,10 @@ export type Options = {
 	onEntry: (() -> ())?,
 	onLeave: (() -> ())?,
 	-- TODO: figure out if onStep value type can be inferred
-	onStep: ((value: unknown) -> unknown)?,
+	onStep: ((value: any) -> any)?,
 
 	-- TODO: figure out if value generic type can be inferred
-	value: Types.Value<unknown>?,
+	value: Types.Value<any>?,
 
 	stepThrough: boolean?,
 

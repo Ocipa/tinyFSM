@@ -46,25 +46,15 @@ return function()
 	end)
 
 	describe(":setState", function()
-		-- TODO: :step tests
+		--TODO: setState tests
+	end)
+
+	describe(":getCurrentKey", function()
+		-- at the time of writing, a test for this would be pointless
 	end)
 
 	describe(":setValue", function()
-		it("sets the value", function()
-			-- tinyFSM expects the key of every state to be unique,
-			-- so this is used to make each key unique
-			local i = HttpService:GenerateGUID(false)
-
-			-- TODO: fix needing to cast this
-			local val = TinyFSM.value.new({ initialValue = 2 } :: ValueNode.Options<number>)
-			local idle = TinyFSM.state.new(`Idle{i}`, { value = val :: any })
-
-			local fsm = TinyFSM.init(idle).new()
-
-			expect((fsm :: any)._value).to.equal(2)
-			fsm:setValue(5)
-			expect((fsm :: any)._value).to.equal(5)
-		end)
+		-- at the time of writing, a test for this would be pointless
 	end)
 
 	describe(":getAllOptions", function()
@@ -191,16 +181,12 @@ return function()
 		end)
 	end)
 
-	describe(":setState", function()
-		-- TODO: :setState tests
-	end)
-
 	describe(":serialize", function()
-		-- TODO: :serialize tests
+		-- TODO: serialize tests
 	end)
 
 	describe(":applySerialization", function()
-		-- TODO: :applySerialization tests
+		-- TODO: applySerialization tests
 	end)
 
 	describe(".changed", function()

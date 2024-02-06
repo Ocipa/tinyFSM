@@ -131,6 +131,10 @@ function module:_setState(key, transition, value)
 	self.changed:Fire(self._currentKey, currentNode.key)
 end
 
+function module:getCurrentKey()
+	return self._currentKey
+end
+
 function module:setValue(value)
 	self._value = value
 end
@@ -224,6 +228,7 @@ type Impl<T, S> = {
 	tryOption: (self: T, key: string, value: S?) -> boolean,
 
 	setState: (self: T, key: string) -> (),
+	getCurrentKey: (self: T) -> string,
 	setValue: (self: T, value: S) -> (),
 
 	serialize: (self: T) -> string,
