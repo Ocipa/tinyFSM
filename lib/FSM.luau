@@ -15,9 +15,18 @@ function module:_recursiveStepThroughNodes(count)
 		warn(
 			"Attempted to step through more than 128 state nodes in a single "
 				.. "step. This may be caused by circular transitions, if so, "
-				.. "this can be fixed by making them not circular, or by "
-				.. "changing the transition guards."
+				.. "this can be fixed by making them not circular, by changing "
+				.. "the transition guards or setting stepThrough to false"
 		)
+		return
+	end
+
+	local currentNode = self._nodes[self._currentKey]
+	if currentNode and currentNode.onStep then
+		self._value = currentNode.onStep(self._value)
+	end
+
+	if not currentNode.stepThrough and count >= 1 then
 		return
 	end
 
@@ -29,11 +38,6 @@ function module:_recursiveStepThroughNodes(count)
 end
 
 function module:step()
-	local currentNode = self._nodes[self._currentKey]
-	if currentNode and currentNode.onStep then
-		self._value = currentNode.onStep(self._value)
-	end
-
 	self:_recursiveStepThroughNodes(0)
 end
 

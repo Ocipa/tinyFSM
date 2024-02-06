@@ -9,6 +9,8 @@ export type State = {
 	-- TODO: figure out if value generic type can be inferred
 	value: Value<unknown>?,
 
+	stepThrough: boolean,
+
 	transitions: { [number | string]: Transition },
 
 	[string]: nil,
