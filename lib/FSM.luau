@@ -59,6 +59,25 @@ function module:_getFirstStepableOption()
 	return nil
 end
 
+function module:hasOption(key: string)
+	local currentNode = self._nodes[self._currentKey]
+	return currentNode.transitions[key] ~= nil
+end
+
+function module:canTryOption(key: string)
+	local currentNode = self._nodes[self._currentKey]
+	local transition = currentNode.transitions[key]
+	if not transition then
+		return false
+	end
+
+	if transition.guard ~= nil then
+		return transition.guard(self._value)
+	end
+
+	return true
+end
+
 function module:getAllOptions()
 	local options = {}
 
@@ -70,13 +89,7 @@ function module:getAllOptions()
 		lastKey = key
 
 		if node then
-			local available = true
-
-			if node.guard ~= nil then
-				available = node.guard(self._value)
-			end
-
-			options[key :: string] = available
+			options[key :: string] = self:canTryOption(key :: string)
 		end
 	until not lastKey
 
@@ -224,6 +237,8 @@ type _Attributes<T> = Attributes<T> & {
 type Impl<T, S> = {
 	step: (self: T) -> (),
 
+	hasOption: (self: T, key: string) -> boolean,
+	canTryOption: (self: T, key: string) -> boolean,
 	getAllOptions: (self: T) -> { [string]: boolean },
 	tryOption: (self: T, key: string, value: S?) -> boolean,
 
