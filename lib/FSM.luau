@@ -3,11 +3,11 @@ local NodeKeys = require(script.Parent.NodeKeys)
 local Types = require(script.Parent.Types)
 local Util = require(script.Parent.Util)
 
-export type Options<T> = {
+export type Options = {
 	[string]: nil,
 }
 
-local module: _Impl<unknown> = {} :: _Impl<unknown>
+local module: _Impl = {} :: _Impl
 module.__index = module
 
 function module:_recursiveStepThroughNodes(count)
@@ -59,12 +59,12 @@ function module:_getFirstStepableOption()
 	return nil
 end
 
-function module:hasOption(key: string)
+function module:hasOption(key)
 	local currentNode = self._nodes[self._currentKey]
 	return currentNode.transitions[key] ~= nil
 end
 
-function module:canTryOption(key: string)
+function module:canTryOption(key)
 	local currentNode = self._nodes[self._currentKey]
 	local transition = currentNode.transitions[key]
 	if not transition then
@@ -108,7 +108,7 @@ function module:tryOption(key, value)
 	return true
 end
 
-function module:setState(key: string)
+function module:setState(key)
 	local node = self._nodes[key]
 	if not node then
 		error(`Attempted to set state to '{key}' that does not exist`)
@@ -202,15 +202,15 @@ local function recursiveFindStateNodes(node: Types.State, _nodes: { [string]: Ty
 end
 
 local initializers = {
-	init = function<T>(initialNode: Types.State, options: Options<T>?)
+	init = function(initialNode: Types.State, options: Options?)
 		local nodes = recursiveFindStateNodes(initialNode)
 
 		local constructors
 		constructors = {
-			new = function(): FSM<T>
+			new = function(): FSM
 				local valueNode = if initialNode then initialNode.value else nil
 
-				local self: _Attributes<T> = {
+				local self: _Attributes = {
 					_currentKey = initialNode.key,
 					_nodes = nodes,
 
@@ -223,11 +223,11 @@ local initializers = {
 				setmetatable(self, module)
 				return self :: any
 			end,
-			fromSerialized = function(serialized: string): FSM<T>
+			fromSerialized = function(serialized: string): FSM
 				local fsm = constructors.new()
 				fsm:applySerialization(serialized)
 
-				return fsm :: FSM<T>
+				return fsm :: FSM
 			end,
 		}
 
@@ -235,30 +235,30 @@ local initializers = {
 	end,
 }
 
-type Attributes<T> = {
+type Attributes = {
 	changed: Signal.Signal<string, string>,
 }
 
-type _Attributes<T> = Attributes<T> & {
+type _Attributes = Attributes & {
 	_currentKey: string,
 	_nodes: { [string]: Types.State },
-	_value: T?,
+	_value: any?,
 }
 
 -- TODO: fix the type of transition node guards,
 -- they should get passed the value S?
-type Impl<T, S> = {
+type Impl<T> = {
 	step: (self: T) -> (),
 
 	hasOption: (self: T, key: string) -> boolean,
 	canTryOption: (self: T, key: string) -> boolean,
 	getAllOptions: (self: T) -> { [string]: boolean },
-	tryOption: (self: T, key: string, value: S?) -> boolean,
+	tryOption: (self: T, key: string, value: any?) -> boolean,
 
 	setState: (self: T, key: string) -> (),
 	getCurrentKey: (self: T) -> string,
 	isCurrentKey: (self: T, key: string) -> boolean,
-	setValue: (self: T, value: S) -> (),
+	setValue: (self: T, value: any) -> (),
 
 	serialize: (self: T) -> string,
 	applySerialization: (self: T, serialized: string) -> (),
@@ -266,15 +266,15 @@ type Impl<T, S> = {
 	destroy: (self: T) -> (),
 }
 
-type _Impl<T> = Impl<_FSM<T>, T> & {
-	__index: _Impl<T>,
+type _Impl = Impl<_FSM> & {
+	__index: _Impl,
 
-	_setState: (self: _FSM<T>, key: string, transition: Types.Transition?, value: T?) -> (),
-	_recursiveStepThroughNodes: (self: _FSM<T>, count: number) -> (),
-	_getFirstStepableOption: (self: _FSM<T>) -> Types.Transition?,
+	_setState: (self: _FSM, key: string, transition: Types.Transition?, value: any) -> (),
+	_recursiveStepThroughNodes: (self: _FSM, count: number) -> (),
+	_getFirstStepableOption: (self: _FSM) -> Types.Transition?,
 }
 
-export type FSM<T> = Attributes<T> & Impl<FSM<T>, T>
-type _FSM<T> = typeof(setmetatable({} :: _Attributes<T>, {} :: _Impl<T>)) & _Impl<T>
+export type FSM = Attributes & Impl<FSM>
+type _FSM = typeof(setmetatable({} :: _Attributes, {} :: _Impl)) & _Impl
 
 return initializers
