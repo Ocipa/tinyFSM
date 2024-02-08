@@ -25,10 +25,6 @@ function module.new(key: string, options: Options?): Types.State
 		error(`State key '{key}' is already used.`)
 	end
 
-	if options and options.stepThrough ~= nil then
-		print(options.stepThrough)
-	end
-
 	local node = Util.freezeDeep({
 		key = key,
 		alias = if options and options.alias then Util.toSet(options.alias) else nil,

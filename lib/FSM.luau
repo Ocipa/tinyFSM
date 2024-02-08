@@ -3,10 +3,6 @@ local NodeKeys = require(script.Parent.NodeKeys)
 local Types = require(script.Parent.Types)
 local Util = require(script.Parent.Util)
 
-export type Options = {
-	[string]: nil,
-}
-
 local module: _Impl = {} :: _Impl
 module.__index = module
 
@@ -44,7 +40,7 @@ end
 function module:_getFirstStepableOption()
 	local currentNode = self._nodes[self._currentKey]
 
-	for _, transitionNode in ipairs(currentNode.transitions :: { Types.Transition }) do
+	for _, transitionNode in currentNode.transitions do
 		local available = true
 
 		if transitionNode.guard ~= nil then
@@ -202,7 +198,7 @@ local function recursiveFindStateNodes(node: Types.State, _nodes: { [string]: Ty
 end
 
 local initializers = {
-	init = function(initialNode: Types.State, options: Options?)
+	init = function(initialNode: Types.State)
 		local nodes = recursiveFindStateNodes(initialNode)
 
 		local constructors
@@ -214,8 +210,7 @@ local initializers = {
 					_currentKey = initialNode.key,
 					_nodes = nodes,
 
-					-- TODO: remove this any
-					_value = if valueNode then Util.copyDeep(valueNode.initialValue :: any) else nil,
+					_value = if valueNode then Util.copyDeep(valueNode.initialValue) else nil,
 
 					changed = Signal.new(),
 				}
@@ -245,8 +240,6 @@ type _Attributes = Attributes & {
 	_value: any?,
 }
 
--- TODO: fix the type of transition node guards,
--- they should get passed the value S?
 type Impl<T> = {
 	step: (self: T) -> (),
 

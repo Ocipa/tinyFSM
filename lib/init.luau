@@ -5,7 +5,6 @@ local Types = require(script.Types)
 local ValueNode = require(script.ValueNode)
 
 export type FSM = FSM.FSM
-export type Options = FSM.Options
 
 export type State = Types.State
 export type StateOptions = StateNode.Options
