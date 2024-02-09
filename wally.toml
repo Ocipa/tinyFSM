@@ -1,6 +1,6 @@
 [package]
 name = "ocipa/tiny-fsm"
-version = "0.5.1"
+version = "0.6.0"
 license = "MIT"
 authors = ["Ocipa <ocipamail@gmail.com>"]
 description = "⚠️https://github.com/Ocipa/tinyFSM is in development, EVERYTHING is subject to change until v1.0.0⚠️ "

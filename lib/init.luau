@@ -1,7 +1,7 @@
 local FSM = require(script.FSM)
 local StateNode = require(script.StateNode)
 local TransitionNode = require(script.TransitionNode)
-local Types = require(script.Types)
+local Types = require(script.Util.Types)
 local ValueNode = require(script.ValueNode)
 
 export type FSM = FSM.FSM

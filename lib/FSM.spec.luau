@@ -270,6 +270,29 @@ return function()
 		end)
 	end)
 
+	describe(":peekPastStates", function()
+		it("peek past states", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local toS1 = TinyFSM.transition.new(`S1{i}`)
+			local toS2 = TinyFSM.transition.new(`S2{i}`)
+
+			local s1 = TinyFSM.state.new(`S1{i}`, { transitions = { toNext = toS2 } })
+			TinyFSM.state.new(`S2{i}`, { transitions = { toNext = toS1 } })
+
+			local fsm = TinyFSM.init(s1).new()
+
+			expect(fsm:peekPastStates(1)).never.to.be.ok()
+			fsm:tryOption("toNext")
+			expect(fsm:peekPastStates(1)).to.equal(`S1{i}`)
+			fsm:tryOption("toNext")
+			expect(fsm:peekPastStates(1)).to.equal(`S2{i}`)
+			expect(fsm:peekPastStates(2)).to.equal(`S1{i}`)
+		end)
+	end)
+
 	describe(":serialize", function()
 		-- TODO: serialize tests
 	end)

@@ -1,7 +1,12 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Stack = require(ReplicatedStorage.Packages.tinyFSM.Util.Stack)
 local Signal = require(script.Parent.Parent.Signal)
-local NodeKeys = require(script.Parent.NodeKeys)
-local Types = require(script.Parent.Types)
-local Util = require(script.Parent.Util)
+local NodeKeys = require(script.Parent.Util.NodeKeys)
+local Types = require(script.Parent.Util.Types)
+local Util = require(script.Parent.Util.Util)
+
+local MAX_STACK_SIZE = 10
 
 local module: _Impl = {} :: _Impl
 module.__index = module
@@ -123,6 +128,7 @@ function module:_setState(key, transition, value)
 		transition.onTransition()
 	end
 
+	self._pastStates:push(self._currentKey)
 	self._currentKey = key
 
 	local newNode = self._nodes[self._currentKey]
@@ -132,9 +138,7 @@ function module:_setState(key, transition, value)
 
 	self._value = value
 	if self._value == nil and newNode.value then
-		local initialValue = newNode.value.initialValue
-
-		self._value = Util.copyDeep(initialValue)
+		self._value = Util.copyDeep(newNode.value.initialValue)
 	end
 
 	self.changed:Fire(self._currentKey, currentNode.key)
@@ -159,6 +163,14 @@ end
 
 function module:setValue(value)
 	self._value = value
+end
+
+function module:peekPastStates(count)
+	if count > MAX_STACK_SIZE then
+		return nil
+	end
+
+	return self._pastStates:peek(count)
 end
 
 function module:serialize()
@@ -208,6 +220,7 @@ local initializers = {
 
 				local self: _Attributes = {
 					_currentKey = initialNode.key,
+					_pastStates = Stack.new(MAX_STACK_SIZE),
 					_nodes = nodes,
 
 					_value = if valueNode then Util.copyDeep(valueNode.initialValue) else nil,
@@ -236,7 +249,9 @@ type Attributes = {
 
 type _Attributes = Attributes & {
 	_currentKey: string,
+	_pastStates: Stack.Stack<string>,
 	_nodes: { [string]: Types.State },
+
 	_value: any?,
 }
 
@@ -252,6 +267,8 @@ type Impl<T> = {
 	getCurrentKey: (self: T) -> string,
 	isCurrentKey: (self: T, key: string) -> boolean,
 	setValue: (self: T, value: any) -> (),
+
+	peekPastStates: (self: T, count: number?) -> string?,
 
 	serialize: (self: T) -> string,
 	applySerialization: (self: T, serialized: string) -> (),

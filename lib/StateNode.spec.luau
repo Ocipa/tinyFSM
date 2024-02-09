@@ -1,4 +1,3 @@
---!nolint TableOperations
 local HttpService = game:GetService("HttpService")
 
 local TinyFSM = require(script.Parent)

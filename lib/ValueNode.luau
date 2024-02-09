@@ -1,4 +1,7 @@
-local Types = require(script.Parent.Types)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Util = require(ReplicatedStorage.Packages.tinyFSM.Util.Util)
+local Types = require(script.Parent.Util.Types)
 
 local module = {}
 
@@ -10,8 +13,7 @@ export type Options<T> = {
 }
 
 function module.new<T>(options: Options<T>): Types.Value<T>
-	-- not a deep freeze so value can be mutated
-	local node = table.freeze({
+	local node = Util.freezeDeep({
 		initialValue = options.initialValue,
 
 		serialize = options.serialize,

@@ -1,5 +1,5 @@
-local Types = require(script.Parent.Types)
-local Util = require(script.Parent.Util)
+local Types = require(script.Parent.Util.Types)
+local Util = require(script.Parent.Util.Util)
 
 local module = {}
 

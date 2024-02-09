@@ -1,6 +1,6 @@
-local NodeKeys = require(script.Parent.NodeKeys)
-local Types = require(script.Parent.Types)
-local Util = require(script.Parent.Util)
+local NodeKeys = require(script.Parent.Util.NodeKeys)
+local Types = require(script.Parent.Util.Types)
+local Util = require(script.Parent.Util.Util)
 
 local module = {}
 

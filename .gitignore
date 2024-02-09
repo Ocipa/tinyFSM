@@ -10,8 +10,13 @@
 /*.rbxm
 /*.rbxmx
 
+# Packages
 /Packages
+/ServerPackages
 /DevPackages
+
+# Mac files
+*.DS_Store
 
 # Wally package test files
 /tinyFSM
