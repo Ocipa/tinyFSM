@@ -1,6 +1,4 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local Stack = require(ReplicatedStorage.Packages.tinyFSM.Util.Stack)
+local Stack = require(script.Parent.Util.Stack)
 local Signal = require(script.Parent.Parent.Signal)
 local NodeKeys = require(script.Parent.Util.NodeKeys)
 local Types = require(script.Parent.Util.Types)
@@ -45,7 +43,7 @@ end
 function module:_getFirstStepableOption()
 	local currentNode = self._nodes[self._currentKey]
 
-	for _, transitionNode in currentNode.transitions do
+	for _, transitionNode in ipairs(currentNode.transitions :: { Types.Transition }) do
 		local available = true
 
 		if transitionNode.guard ~= nil then

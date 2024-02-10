@@ -5,6 +5,10 @@ local TinyFSM = require(script.Parent)
 local ValueNode = require(script.Parent.ValueNode)
 
 return function()
+	describe(":_recursiveStepThroughNodes", function()
+		-- TODO: _recursiveStepThroughNodes tests
+	end)
+
 	describe(":step", function()
 		it("steps to the next state", function()
 			-- tinyFSM expects the key of every state to be unique,
@@ -45,43 +49,30 @@ return function()
 		end)
 	end)
 
-	describe(":setState", function()
-		--TODO: setState tests
-	end)
-
-	describe(":getCurrentKey", function()
-		-- at the time of writing, a test for this would be pointless
-	end)
-
-	describe(":isCurrentKey", function()
-		it("checks state key", function()
+	describe(":_getFirstStepableOption", function()
+		it("if there are no stepable options", function()
 			-- tinyFSM expects the key of every state to be unique,
 			-- so this is used to make each key unique
 			local i = HttpService:GenerateGUID(false)
 
-			local s1 = TinyFSM.state.new(`S1{i}`, {})
+			local t1 = TinyFSM.transition.new(`S1{i}`)
+			local s1 = TinyFSM.state.new(`S1{i}`, { transitions = { t1 = t1 } })
 
 			local fsm = TinyFSM.init(s1).new()
-			expect(fsm:isCurrentKey(`S1{i}`)).to.equal(true)
-			expect(fsm:isCurrentKey("aaaa")).to.equal(false)
+			expect((fsm :: any):_getFirstStepableOption()).never.to.be.ok()
 		end)
 
-		it("checks state alias", function()
+		it("if there is stepable options", function()
 			-- tinyFSM expects the key of every state to be unique,
 			-- so this is used to make each key unique
 			local i = HttpService:GenerateGUID(false)
 
-			local s1 = TinyFSM.state.new(`S1{i}`, { alias = { "123", "sss" } })
+			local t1 = TinyFSM.transition.new(`S1{i}`)
+			local s1 = TinyFSM.state.new(`S1{i}`, { transitions = { t1, t1 = t1 } })
 
 			local fsm = TinyFSM.init(s1).new()
-			expect(fsm:isCurrentKey("123")).to.equal(true)
-			expect(fsm:isCurrentKey("sss")).to.equal(true)
-			expect(fsm:isCurrentKey("aaaa")).to.equal(false)
+			expect((fsm :: any):_getFirstStepableOption()).to.be.ok()
 		end)
-	end)
-
-	describe(":setValue", function()
-		-- at the time of writing, a test for this would be pointless
 	end)
 
 	describe(":hasOption", function()
@@ -268,6 +259,49 @@ return function()
 			fsm:tryOption("toRunning")
 			expect((fsm :: any)._value).to.equal(50)
 		end)
+	end)
+
+	describe(":setState", function()
+		--TODO: setState tests
+	end)
+
+	describe(":_setState", function()
+		-- TODO: _setState tests
+	end)
+
+	describe(":getCurrentKey", function()
+		-- at the time of writing, a test for this would be pointless
+	end)
+
+	describe(":isCurrentKey", function()
+		it("checks state key", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local s1 = TinyFSM.state.new(`S1{i}`, {})
+
+			local fsm = TinyFSM.init(s1).new()
+			expect(fsm:isCurrentKey(`S1{i}`)).to.equal(true)
+			expect(fsm:isCurrentKey("aaaa")).to.equal(false)
+		end)
+
+		it("checks state alias", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local s1 = TinyFSM.state.new(`S1{i}`, { alias = { "123", "sss" } })
+
+			local fsm = TinyFSM.init(s1).new()
+			expect(fsm:isCurrentKey("123")).to.equal(true)
+			expect(fsm:isCurrentKey("sss")).to.equal(true)
+			expect(fsm:isCurrentKey("aaaa")).to.equal(false)
+		end)
+	end)
+
+	describe(":setValue", function()
+		-- at the time of writing, a test for this would be pointless
 	end)
 
 	describe(":peekPastStates", function()

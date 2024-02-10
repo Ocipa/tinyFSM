@@ -1,6 +1,4 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local Util = require(ReplicatedStorage.Packages.tinyFSM.Util.Util)
+local Util = require(script.Parent.Util.Util)
 local Types = require(script.Parent.Util.Types)
 
 local module = {}
