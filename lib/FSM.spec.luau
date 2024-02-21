@@ -45,7 +45,7 @@ return function()
 			local fsm = TinyFSM.init(idle).new()
 
 			fsm:step()
-			expect((fsm :: any)._value).to.equal(1)
+			expect((fsm :: any)._valueNode).to.equal(1)
 		end)
 	end)
 
@@ -236,7 +236,7 @@ return function()
 			local fsm = TinyFSM.init(idle).new()
 
 			fsm:tryOption("toRunning", 25)
-			expect((fsm :: any)._value).to.equal(25)
+			expect((fsm :: any)._valueNode).to.equal(25)
 		end)
 
 		it("uses initial value", function()
@@ -257,7 +257,7 @@ return function()
 			local fsm = TinyFSM.init(idle).new()
 
 			fsm:tryOption("toRunning")
-			expect((fsm :: any)._value).to.equal(50)
+			expect((fsm :: any)._valueNode).to.equal(50)
 		end)
 	end)
 
@@ -300,10 +300,6 @@ return function()
 		end)
 	end)
 
-	describe(":setValue", function()
-		-- at the time of writing, a test for this would be pointless
-	end)
-
 	describe(":peekPastStates", function()
 		it("peek past states", function()
 			-- tinyFSM expects the key of every state to be unique,
@@ -325,6 +321,14 @@ return function()
 			expect(fsm:peekPastStates(1)).to.equal(`S2{i}`)
 			expect(fsm:peekPastStates(2)).to.equal(`S1{i}`)
 		end)
+	end)
+
+	describe(":setValue", function()
+		-- at the time of writing, a test for this would be pointless
+	end)
+
+	describe(":getValue", function()
+		-- at the time of writing, a test for this would be pointless
 	end)
 
 	describe(":serialize", function()

@@ -4,7 +4,7 @@ local TransitionNode = require(script.TransitionNode)
 local Types = require(script.Util.Types)
 local ValueNode = require(script.ValueNode)
 
-export type FSM = FSM.FSM
+export type FSM<T> = FSM.FSM<T>
 
 export type State = Types.State
 export type StateOptions = StateNode.Options

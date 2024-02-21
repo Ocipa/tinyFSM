@@ -22,7 +22,7 @@ function module:_recursiveStepThroughNodes(count)
 
 	local currentNode = self._nodes[self._currentKey]
 	if currentNode and currentNode.onStep then
-		self._value = currentNode.onStep(self._value)
+		self._valueNode = currentNode.onStep(self._valueNode)
 	end
 
 	if not currentNode.stepThrough and count >= 1 then
@@ -47,7 +47,7 @@ function module:_getFirstStepableOption()
 		local available = true
 
 		if transitionNode.guard ~= nil then
-			available = transitionNode.guard(self._value)
+			available = transitionNode.guard(self._valueNode, self._value)
 		end
 
 		if available then
@@ -71,7 +71,7 @@ function module:canTryOption(key)
 	end
 
 	if transition.guard ~= nil then
-		return transition.guard(self._value)
+		return transition.guard(self._valueNode, self._value)
 	end
 
 	return true
@@ -134,9 +134,9 @@ function module:_setState(key, transition, value)
 		newNode.onEntry()
 	end
 
-	self._value = value
-	if self._value == nil and newNode.value then
-		self._value = Util.copyDeep(newNode.value.initialValue)
+	self._valueNode = value
+	if self._valueNode == nil and newNode.value then
+		self._valueNode = Util.copyDeep(newNode.value.initialValue)
 	end
 
 	self.changed:Fire(self._currentKey, currentNode.key)
@@ -159,16 +159,20 @@ function module:isCurrentKey(key)
 	return currentNode.alias[key] == true
 end
 
-function module:setValue(value)
-	self._value = value
-end
-
 function module:peekPastStates(count)
 	if count > MAX_STACK_SIZE then
 		return nil
 	end
 
 	return self._pastStates:peek(count)
+end
+
+function module:setValue(value)
+	self._value = value
+end
+
+function module:getValue()
+	return self._value
 end
 
 function module:serialize()
@@ -213,15 +217,16 @@ local initializers = {
 
 		local constructors
 		constructors = {
-			new = function(): FSM
+			new = function<T>(initialValue: T?): FSM<T>
 				local valueNode = if initialNode then initialNode.value else nil
 
-				local self: _Attributes = {
+				local self: _Attributes<T> = {
 					_currentKey = initialNode.key,
 					_pastStates = Stack.new(MAX_STACK_SIZE),
 					_nodes = nodes,
 
-					_value = if valueNode then Util.copyDeep(valueNode.initialValue) else nil,
+					_value = initialValue,
+					_valueNode = if valueNode then Util.copyDeep(valueNode.initialValue) else nil,
 
 					changed = Signal.new(),
 				}
@@ -229,11 +234,12 @@ local initializers = {
 				setmetatable(self, module)
 				return self :: any
 			end,
-			fromSerialized = function(serialized: string): FSM
+
+			fromSerialized = function<T>(serialized: string): FSM<T>
 				local fsm = constructors.new()
 				fsm:applySerialization(serialized)
 
-				return fsm :: FSM
+				return fsm :: FSM<T>
 			end,
 		}
 
@@ -241,19 +247,20 @@ local initializers = {
 	end,
 }
 
-type Attributes = {
+type Attributes<T> = {
 	changed: Signal.Signal<string, string>,
 }
 
-type _Attributes = Attributes & {
+type _Attributes<T> = Attributes<T> & {
 	_currentKey: string,
 	_pastStates: Stack.Stack<string>,
 	_nodes: { [string]: Types.State },
 
-	_value: any?,
+	_value: T?,
+	_valueNode: any?,
 }
 
-type Impl<T> = {
+type Impl<T, S> = {
 	step: (self: T) -> (),
 
 	hasOption: (self: T, key: string) -> boolean,
@@ -264,9 +271,11 @@ type Impl<T> = {
 	setState: (self: T, key: string) -> (),
 	getCurrentKey: (self: T) -> string,
 	isCurrentKey: (self: T, key: string) -> boolean,
-	setValue: (self: T, value: any) -> (),
 
 	peekPastStates: (self: T, count: number?) -> string?,
+
+	setValue: (self: T, value: S) -> (),
+	getValue: (self: T) -> S,
 
 	serialize: (self: T) -> string,
 	applySerialization: (self: T, serialized: string) -> (),
@@ -274,7 +283,7 @@ type Impl<T> = {
 	destroy: (self: T) -> (),
 }
 
-type _Impl = Impl<_FSM> & {
+type _Impl = Impl<_FSM, unknown> & {
 	__index: _Impl,
 
 	_setState: (self: _FSM, key: string, transition: Types.Transition?, value: any) -> (),
@@ -282,7 +291,7 @@ type _Impl = Impl<_FSM> & {
 	_getFirstStepableOption: (self: _FSM) -> Types.Transition?,
 }
 
-export type FSM = Attributes & Impl<FSM>
-type _FSM = typeof(setmetatable({} :: _Attributes, {} :: _Impl)) & _Impl
+export type FSM<T> = Attributes<T> & Impl<FSM<T>, T>
+type _FSM = typeof(setmetatable({} :: _Attributes<unknown>, {} :: _Impl)) & _Impl
 
 return initializers
