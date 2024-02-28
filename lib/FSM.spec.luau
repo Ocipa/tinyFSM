@@ -331,12 +331,97 @@ return function()
 		-- at the time of writing, a test for this would be pointless
 	end)
 
-	describe(":serialize", function()
-		-- TODO: serialize tests
+	describe(":snapshot", function()
+		it("takes a snapshot of a state without a value node", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local idle = TinyFSM.state.new(`Idle{i}`)
+
+			local fsm = TinyFSM.init(idle).new()
+			local snapshot = fsm:snapshot()
+
+			expect(snapshot).to.be.ok()
+			expect(snapshot.key).to.equal(`Idle{i}`)
+			expect(snapshot.value).never.to.be.ok()
+		end)
+
+		it("takes a snapshot of a state with a value node", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local value = TinyFSM.value.new({
+				initialValue = 0,
+
+				serialize = function(value): string
+					return tostring(value)
+				end,
+
+				deserialize = function(value): number
+					return tonumber(value) :: number
+				end,
+			})
+			local idle = TinyFSM.state.new(`Idle{i}`, { value = value })
+
+			local fsm = TinyFSM.init(idle).new()
+			local snapshot = fsm:snapshot()
+
+			expect(snapshot).to.be.ok()
+			expect(snapshot.key).to.equal(`Idle{i}`)
+			expect(snapshot.value).to.equal("0")
+		end)
 	end)
 
-	describe(":applySerialization", function()
-		-- TODO: applySerialization tests
+	describe(":applySnapshot", function()
+		it("applies a snapshot of a state without a value node", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local toIdle2 = TinyFSM.transition.new(`Idle2{i}`)
+
+			local idle = TinyFSM.state.new(`Idle{i}`, { transitions = { toIdle2 } })
+			TinyFSM.state.new(`Idle2{i}`)
+
+			local fsm = TinyFSM.init(idle).new()
+			local snapshot = fsm:snapshot()
+			fsm:step()
+			fsm:applySnapshot(snapshot)
+
+			expect(fsm:isCurrentKey(`Idle{i}`)).to.equal(true)
+		end)
+
+		it("applies a snapshot of a state with a value node", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local value = TinyFSM.value.new({
+				initialValue = 0,
+
+				serialize = function(value): string
+					return tostring(value)
+				end,
+
+				deserialize = function(value): number
+					return tonumber(value) :: number
+				end,
+			})
+			local toIdle2 = TinyFSM.transition.new(`Idle2{i}`)
+
+			local idle = TinyFSM.state.new(`Idle{i}`, { value = value, transitions = { toIdle2 } })
+			TinyFSM.state.new(`Idle2{i}`)
+
+			local fsm = TinyFSM.init(idle).new()
+			local snapshot = fsm:snapshot()
+			fsm:tryOption("toIdle2")
+			fsm:applySnapshot(snapshot)
+
+			expect(fsm:isCurrentKey(`Idle{i}`)).to.equal(true)
+			expect((fsm :: any)._valueNode).to.equal(0)
+		end)
 	end)
 
 	describe(".changed", function()

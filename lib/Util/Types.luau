@@ -1,3 +1,8 @@
+export type Snapshot = {
+	key: string,
+	value: string?,
+}
+
 export type State = {
 	key: string,
 	alias: { [string]: true }?,

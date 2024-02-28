@@ -175,14 +175,22 @@ function module:getValue()
 	return self._value
 end
 
-function module:serialize()
-	-- TODO: implement
-	error("serialize is not implemented")
+function module:snapshot()
+	local currentNode = self._nodes[self._currentKey]
+	local valueNode = currentNode.value
+
+	return {
+		key = self._currentKey,
+		value = if valueNode then valueNode.serialize(self._valueNode) else nil,
+	}
 end
 
-function module:applySerialization()
-	-- TODO: implement
-	error("applySerialization is not implemented")
+function module:applySnapshot(snapshot)
+	local currentNode = self._nodes[snapshot.key]
+	local valueNode = currentNode.value
+
+	self:_setState(snapshot.key)
+	self._valueNode = if valueNode and snapshot.value then valueNode.deserialize(snapshot.value) else nil
 end
 
 local function recursiveFindStateNodes(node: Types.State, _nodes: { [string]: Types.State }?): { [string]: Types.State }
@@ -235,9 +243,9 @@ local initializers = {
 				return self :: any
 			end,
 
-			fromSerialized = function<T>(serialized: string): FSM<T>
+			fromSnapshot = function<T>(snapshot: Types.Snapshot): FSM<T>
 				local fsm = constructors.new()
-				fsm:applySerialization(serialized)
+				fsm:applySnapshot(snapshot)
 
 				return fsm :: FSM<T>
 			end,
@@ -277,8 +285,8 @@ type Impl<T, S> = {
 	setValue: (self: T, value: S) -> (),
 	getValue: (self: T) -> S,
 
-	serialize: (self: T) -> string,
-	applySerialization: (self: T, serialized: string) -> (),
+	snapshot: (self: T) -> Types.Snapshot,
+	applySnapshot: (self: T, snapshot: Types.Snapshot) -> (),
 
 	destroy: (self: T) -> (),
 }

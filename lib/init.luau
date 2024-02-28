@@ -15,6 +15,8 @@ export type TransitionOptions = TransitionNode.Options
 export type Value<T> = Types.Value<T>
 export type ValueOptions<T> = ValueNode.Options<T>
 
+export type Snapshot = Types.Snapshot
+
 return {
 	init = FSM.init,
 
