@@ -5,20 +5,20 @@
 <br>
 
 
-## Examples
+## Example
 
 ```lua
--- file a (the state machine 'schema')
+-- file a (the state machine 'definition')
 local tinyFSM = require('path to tinyFSM')
 
-local toS2 = tinyFSM.transition.new "s2" {
+local toS2 = tinyFSM.transition.new("s2", {
     guard = function() return math.random() < 0.5 end,
-}
+})
 
-local s1 = tinyFSM.state.new "s1" {
+local s1 = tinyFSM.state.new("s1", {
     transitions = {toS2}
-}
-local s2 = tinyFSM.state.new "s2" {}
+})
+local s2 = tinyFSM.state.new("s2", {})
 
 return tinyFSM.init(s1)
 ```

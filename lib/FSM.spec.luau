@@ -75,34 +75,6 @@ return function()
 		end)
 	end)
 
-	describe(":hasOption", function()
-		it("checks if a state has a valid option", function()
-			-- tinyFSM expects the key of every state to be unique,
-			-- so this is used to make each key unique
-			local i = HttpService:GenerateGUID(false)
-
-			local t1 = TinyFSM.transition.new(`S1{i}`)
-
-			local s1 = TinyFSM.state.new(`S1{i}`, { transitions = { t1 = t1 } })
-
-			local fsm = TinyFSM.init(s1).new()
-			expect(fsm:hasOption("t1")).to.equal(true)
-		end)
-
-		it("checks if a state has a invalid option", function()
-			-- tinyFSM expects the key of every state to be unique,
-			-- so this is used to make each key unique
-			local i = HttpService:GenerateGUID(false)
-
-			local t1 = TinyFSM.transition.new(`S1{i}`)
-
-			local s1 = TinyFSM.state.new(`S1{i}`, { transitions = { t1 = t1 } })
-
-			local fsm = TinyFSM.init(s1).new()
-			expect(fsm:hasOption("aaaa")).to.equal(false)
-		end)
-	end)
-
 	describe(":canTryOption", function()
 		it("checks if a valid option can be tried", function()
 			-- tinyFSM expects the key of every state to be unique,
@@ -134,56 +106,6 @@ return function()
 			local fsm = TinyFSM.init(s1).new()
 
 			expect(fsm:canTryOption("aaa")).to.equal(false)
-		end)
-	end)
-
-	describe(":getAllOptions", function()
-		it("gets only named options", function()
-			-- tinyFSM expects the key of every state to be unique,
-			-- so this is used to make each key unique
-			local i = HttpService:GenerateGUID(false)
-
-			local t1 = TinyFSM.transition.new(`Jumping{i}`)
-			local t2 = TinyFSM.transition.new(`Jumping{i}`)
-			local t3 = TinyFSM.transition.new(`Jumping{i}`)
-
-			local idle = TinyFSM.state.new(`Idle{i}`, { transitions = { t1, a = t2, b = t3 } })
-			TinyFSM.state.new(`Jumping{i}`)
-
-			local fsm = TinyFSM.init(idle).new()
-			local options = fsm:getAllOptions()
-
-			expect(#options).to.equal(0)
-			expect(options.a).to.be.ok()
-			expect(options.b).to.be.ok()
-		end)
-
-		it("runs transition guard", function()
-			-- tinyFSM expects the key of every state to be unique,
-			-- so this is used to make each key unique
-			local i = HttpService:GenerateGUID(false)
-
-			local t1 = TinyFSM.transition.new(`Jumping{i}`)
-			local t2 = TinyFSM.transition.new(`Jumping{i}`, {
-				guard = function()
-					return false
-				end,
-			})
-			local t3 = TinyFSM.transition.new(`Jumping{i}`, {
-				guard = function()
-					return true
-				end,
-			})
-
-			local idle = TinyFSM.state.new(`Idle{i}`, { transitions = { a = t1, b = t2, c = t3 } })
-			TinyFSM.state.new(`Jumping{i}`)
-
-			local fsm = TinyFSM.init(idle).new()
-			local options = fsm:getAllOptions()
-
-			expect(options.a).to.equal(true)
-			expect(options.b).to.equal(false)
-			expect(options.c).to.equal(true)
 		end)
 	end)
 
@@ -297,29 +219,6 @@ return function()
 			expect(fsm:isCurrentKey("123")).to.equal(true)
 			expect(fsm:isCurrentKey("sss")).to.equal(true)
 			expect(fsm:isCurrentKey("aaaa")).to.equal(false)
-		end)
-	end)
-
-	describe(":peekPastStates", function()
-		it("peek past states", function()
-			-- tinyFSM expects the key of every state to be unique,
-			-- so this is used to make each key unique
-			local i = HttpService:GenerateGUID(false)
-
-			local toS1 = TinyFSM.transition.new(`S1{i}`)
-			local toS2 = TinyFSM.transition.new(`S2{i}`)
-
-			local s1 = TinyFSM.state.new(`S1{i}`, { transitions = { toNext = toS2 } })
-			TinyFSM.state.new(`S2{i}`, { transitions = { toNext = toS1 } })
-
-			local fsm = TinyFSM.init(s1).new()
-
-			expect(fsm:peekPastStates(1)).never.to.be.ok()
-			fsm:tryOption("toNext")
-			expect(fsm:peekPastStates(1)).to.equal(`S1{i}`)
-			fsm:tryOption("toNext")
-			expect(fsm:peekPastStates(1)).to.equal(`S2{i}`)
-			expect(fsm:peekPastStates(2)).to.equal(`S1{i}`)
 		end)
 	end)
 

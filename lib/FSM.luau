@@ -58,11 +58,6 @@ function module:_getFirstStepableOption()
 	return nil
 end
 
-function module:hasOption(key)
-	local currentNode = self._nodes[self._currentKey]
-	return currentNode.transitions[key] ~= nil
-end
-
 function module:canTryOption(key)
 	local currentNode = self._nodes[self._currentKey]
 	local transition = currentNode.transitions[key]
@@ -75,24 +70,6 @@ function module:canTryOption(key)
 	end
 
 	return true
-end
-
-function module:getAllOptions()
-	local options = {}
-
-	local currentNode = self._nodes[self._currentKey]
-	local lastKey: any = if #currentNode.transitions == 0 then nil else #currentNode.transitions
-
-	repeat
-		local key, node = next(currentNode.transitions, lastKey)
-		lastKey = key
-
-		if node then
-			options[key :: string] = self:canTryOption(key :: string)
-		end
-	until not lastKey
-
-	return options
 end
 
 function module:tryOption(key, value)
@@ -147,32 +124,12 @@ function module:getCurrentKey()
 end
 
 function module:isCurrentKey(key)
-	if key == self._currentKey then
+	local currentNode = self._nodes[self._currentKey]
+	if currentNode.alias and currentNode.alias[key] then
 		return true
 	end
 
-	local currentNode = self._nodes[self._currentKey]
-	if not currentNode.alias then
-		return false
-	end
-
-	return currentNode.alias[key] == true
-end
-
-function module:peekPastStates(count)
-	if count > MAX_STACK_SIZE then
-		return nil
-	end
-
-	return self._pastStates:peek(count)
-end
-
-function module:setValue(value)
-	self._value = value
-end
-
-function module:getValue()
-	return self._value
+	return key == self._currentKey
 end
 
 function module:snapshot()
@@ -271,19 +228,12 @@ type _Attributes<T> = Attributes<T> & {
 type Impl<T, S> = {
 	step: (self: T) -> (),
 
-	hasOption: (self: T, key: string) -> boolean,
 	canTryOption: (self: T, key: string) -> boolean,
-	getAllOptions: (self: T) -> { [string]: boolean },
 	tryOption: (self: T, key: string, value: any?) -> boolean,
 
 	setState: (self: T, key: string) -> (),
 	getCurrentKey: (self: T) -> string,
 	isCurrentKey: (self: T, key: string) -> boolean,
-
-	peekPastStates: (self: T, count: number?) -> string?,
-
-	setValue: (self: T, value: S) -> (),
-	getValue: (self: T) -> S,
 
 	snapshot: (self: T) -> Types.Snapshot,
 	applySnapshot: (self: T, snapshot: Types.Snapshot) -> (),
