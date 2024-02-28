@@ -1,10 +1,7 @@
-local Stack = require(script.Parent.Util.Stack)
 local Signal = require(script.Parent.Parent.Signal)
 local NodeKeys = require(script.Parent.Util.NodeKeys)
 local Types = require(script.Parent.Util.Types)
 local Util = require(script.Parent.Util.Util)
-
-local MAX_STACK_SIZE = 10
 
 local module: _Impl = {} :: _Impl
 module.__index = module
@@ -103,7 +100,6 @@ function module:_setState(key, transition, value)
 		transition.onTransition()
 	end
 
-	self._pastStates:push(self._currentKey)
 	self._currentKey = key
 
 	local newNode = self._nodes[self._currentKey]
@@ -187,7 +183,6 @@ local initializers = {
 
 				local self: _Attributes<T> = {
 					_currentKey = initialNode.key,
-					_pastStates = Stack.new(MAX_STACK_SIZE),
 					_nodes = nodes,
 
 					_value = initialValue,
@@ -218,7 +213,6 @@ type Attributes<T> = {
 
 type _Attributes<T> = Attributes<T> & {
 	_currentKey: string,
-	_pastStates: Stack.Stack<string>,
 	_nodes: { [string]: Types.State },
 
 	_value: T?,
