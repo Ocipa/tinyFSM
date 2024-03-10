@@ -6,7 +6,7 @@ local Util = require(script.Parent.Util.Util)
 local module: _Impl = {} :: _Impl
 module.__index = module
 
-function module:_recursiveStepThroughNodes(count)
+function module:_recursiveStepThroughNodes(count, ...)
 	if count > 128 then
 		warn(
 			"Attempted to step through more than 128 state nodes in a single "
@@ -26,25 +26,25 @@ function module:_recursiveStepThroughNodes(count)
 		return
 	end
 
-	local transition = self:_getFirstStepableOption()
+	local transition = self:_getFirstStepableOption(...)
 	if transition then
 		self:_setState(transition.key, transition)
 		self:_recursiveStepThroughNodes(count + 1)
 	end
 end
 
-function module:step()
-	self:_recursiveStepThroughNodes(0)
+function module:step(...)
+	self:_recursiveStepThroughNodes(0, ...)
 end
 
-function module:_getFirstStepableOption()
+function module:_getFirstStepableOption(...)
 	local currentNode = self._nodes[self._currentKey]
 
 	for _, transitionNode in ipairs(currentNode.transitions :: { Types.Transition }) do
 		local available = true
 
 		if transitionNode.guard ~= nil then
-			available = transitionNode.guard(self._valueNode, self._value)
+			available = transitionNode.guard(self._valueNode, ...)
 		end
 
 		if available then
@@ -55,7 +55,7 @@ function module:_getFirstStepableOption()
 	return nil
 end
 
-function module:canTryOption(key)
+function module:canTryOption(key, ...)
 	local currentNode = self._nodes[self._currentKey]
 	local transition = currentNode.transitions[key]
 	if not transition then
@@ -63,13 +63,13 @@ function module:canTryOption(key)
 	end
 
 	if transition.guard ~= nil then
-		return transition.guard(self._valueNode, self._value)
+		return transition.guard(self._valueNode, ...)
 	end
 
 	return true
 end
 
-function module:tryOption(key, value)
+function module:tryOption(key)
 	local node = self._nodes[self._currentKey]
 
 	local transition = node.transitions[key]
@@ -77,7 +77,7 @@ function module:tryOption(key, value)
 		return false
 	end
 
-	self:_setState(transition.key, transition, value)
+	self:_setState(transition.key, transition)
 	return true
 end
 
@@ -90,7 +90,7 @@ function module:setState(key)
 	self:_setState(key)
 end
 
-function module:_setState(key, transition, value)
+function module:_setState(key, transition)
 	local currentNode = self._nodes[self._currentKey]
 	if currentNode and currentNode.onLeave then
 		currentNode.onLeave()
@@ -107,10 +107,7 @@ function module:_setState(key, transition, value)
 		newNode.onEntry()
 	end
 
-	self._valueNode = value
-	if self._valueNode == nil and newNode.value then
-		self._valueNode = Util.copyDeep(newNode.value.initialValue)
-	end
+	self._valueNode = if newNode.value then Util.copyDeep(newNode.value.initialValue) else nil
 
 	self.changed:Fire(self._currentKey, currentNode.key)
 end
@@ -207,11 +204,11 @@ local initializers = {
 	end,
 }
 
-type Attributes<T> = {
+type Attributes = {
 	changed: Signal.Signal<string, string>,
 }
 
-type _Attributes<T> = Attributes<T> & {
+type _Attributes<T> = Attributes & {
 	_currentKey: string,
 	_nodes: { [string]: Types.State },
 
@@ -220,10 +217,10 @@ type _Attributes<T> = Attributes<T> & {
 }
 
 type Impl<T, S> = {
-	step: (self: T) -> (),
+	step: (self: T, ...unknown) -> (),
 
-	canTryOption: (self: T, key: string) -> boolean,
-	tryOption: (self: T, key: string, value: any?) -> boolean,
+	canTryOption: (self: T, key: string, ...unknown) -> boolean,
+	tryOption: (self: T, key: string) -> boolean,
 
 	setState: (self: T, key: string) -> (),
 	getCurrentKey: (self: T) -> string,
@@ -239,11 +236,11 @@ type _Impl = Impl<_FSM, unknown> & {
 	__index: _Impl,
 
 	_setState: (self: _FSM, key: string, transition: Types.Transition?, value: any) -> (),
-	_recursiveStepThroughNodes: (self: _FSM, count: number) -> (),
-	_getFirstStepableOption: (self: _FSM) -> Types.Transition?,
+	_recursiveStepThroughNodes: (self: _FSM, count: number, ...unknown) -> (),
+	_getFirstStepableOption: (self: _FSM, ...unknown) -> Types.Transition?,
 }
 
-export type FSM<T> = Attributes<T> & Impl<FSM<T>, T>
+export type FSM<T> = Attributes & Impl<FSM<T>, T>
 type _FSM = typeof(setmetatable({} :: _Attributes<unknown>, {} :: _Impl)) & _Impl
 
 return initializers

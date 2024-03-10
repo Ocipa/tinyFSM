@@ -26,7 +26,7 @@ export type Transition = {
 	key: string,
 
 	-- TODO: figure out if guard value type can be inferred
-	guard: ((nodeValue: any, value: any?) -> boolean)?,
+	guard: ((nodeValue: any, ...unknown) -> boolean)?,
 	onTransition: (() -> ())?,
 
 	[string]: nil,
