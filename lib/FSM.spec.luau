@@ -27,13 +27,38 @@ return function()
 			expect((fsm :: any)._currentKey).to.equal(`Jumping{i}`)
 		end)
 
+		it("tracks steps since last state change", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local t1 = TinyFSM.transition.new(`S2{i}`, {
+				guard = function(steps)
+					return steps > 2
+				end,
+			})
+
+			local s1 = TinyFSM.state.new(`S1{i}`, {
+				transitions = { t1 },
+			})
+			TinyFSM.state.new(`S2{i}`)
+
+			local fsm = TinyFSM.init(s1).new()
+
+			expect(fsm:getSteps()).to.equal(1)
+			fsm:step()
+			expect(fsm:getSteps()).to.equal(2)
+			fsm:step()
+			expect(fsm:getSteps()).to.equal(1)
+		end)
+
 		it("checks optional values get passed when stepping", function()
 			-- tinyFSM expects the key of every state to be unique,
 			-- so this is used to make each key unique
 			local i = HttpService:GenerateGUID(false)
 
 			local t1 = TinyFSM.transition.new(`S2{i}`, {
-				guard = function(_, ...)
+				guard = function(_, _, ...)
 					return select(1, ...) == true and select(2, ...) == 50
 				end,
 			})
@@ -134,7 +159,7 @@ return function()
 			local i = HttpService:GenerateGUID(false)
 
 			local t1 = TinyFSM.transition.new(`S2{i}`, {
-				guard = function(_, ...)
+				guard = function(_, _, ...)
 					return select(1, ...) == true and select(2, ...) == 50
 				end,
 			})

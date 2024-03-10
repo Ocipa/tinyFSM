@@ -34,6 +34,7 @@ function module:_recursiveStepThroughNodes(count, ...)
 end
 
 function module:step(...)
+	self._steps += 1
 	self:_recursiveStepThroughNodes(0, ...)
 end
 
@@ -44,7 +45,7 @@ function module:_getFirstStepableOption(...)
 		local available = true
 
 		if transitionNode.guard ~= nil then
-			available = transitionNode.guard(self._valueNode, ...)
+			available = transitionNode.guard(self._steps, self._valueNode, ...)
 		end
 
 		if available then
@@ -63,7 +64,7 @@ function module:canTryOption(key, ...)
 	end
 
 	if transition.guard ~= nil then
-		return transition.guard(self._valueNode, ...)
+		return transition.guard(self._steps, self._valueNode, ...)
 	end
 
 	return true
@@ -108,6 +109,7 @@ function module:_setState(key, transition)
 	end
 
 	self._valueNode = if newNode.value then Util.copyDeep(newNode.value.initialValue) else nil
+	self._steps = 1
 
 	self.changed:Fire(self._currentKey, currentNode.key)
 end
@@ -123,6 +125,10 @@ function module:isCurrentKey(key)
 	end
 
 	return key == self._currentKey
+end
+
+function module:getSteps()
+	return self._steps
 end
 
 function module:snapshot()
@@ -185,6 +191,8 @@ local initializers = {
 					_value = initialValue,
 					_valueNode = if valueNode then Util.copyDeep(valueNode.initialValue) else nil,
 
+					_steps = 1,
+
 					changed = Signal.new(),
 				}
 
@@ -214,6 +222,8 @@ type _Attributes<T> = Attributes & {
 
 	_value: T?,
 	_valueNode: any?,
+
+	_steps: number,
 }
 
 type Impl<T, S> = {
@@ -225,6 +235,8 @@ type Impl<T, S> = {
 	setState: (self: T, key: string) -> (),
 	getCurrentKey: (self: T) -> string,
 	isCurrentKey: (self: T, key: string) -> boolean,
+
+	getSteps: (self: T) -> number,
 
 	snapshot: (self: T) -> Types.Snapshot,
 	applySnapshot: (self: T, snapshot: Types.Snapshot) -> (),
