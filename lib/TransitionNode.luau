@@ -5,7 +5,7 @@ local module = {}
 
 export type Options = {
 	-- TODO: figure out if guard value type can be inferred
-	guard: ((nodeValue: any, ...unknown) -> boolean)?,
+	guard: ((steps: number, nodeValue: any, ...unknown) -> boolean)?,
 	onTransition: (() -> ())?,
 }
 

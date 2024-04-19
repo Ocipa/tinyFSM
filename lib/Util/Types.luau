@@ -1,5 +1,6 @@
 export type Snapshot = {
 	key: string,
+	steps: number,
 	value: string?,
 }
 
@@ -26,7 +27,7 @@ export type Transition = {
 	key: string,
 
 	-- TODO: figure out if guard value type can be inferred
-	guard: ((nodeValue: any, ...unknown) -> boolean)?,
+	guard: ((steps: number, nodeValue: any, ...unknown) -> boolean)?,
 	onTransition: (() -> ())?,
 
 	[string]: nil,

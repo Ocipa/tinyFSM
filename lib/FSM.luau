@@ -88,6 +88,10 @@ function module:setState(key)
 		error(`Attempted to set state to '{key}' that does not exist`)
 	end
 
+	if self._currentKey == key then
+		return
+	end
+
 	self:_setState(key)
 end
 
@@ -137,6 +141,7 @@ function module:snapshot()
 
 	return {
 		key = self._currentKey,
+		steps = self._steps,
 		value = if valueNode then valueNode.serialize(self._valueNode) else nil,
 	}
 end
@@ -146,6 +151,7 @@ function module:applySnapshot(snapshot)
 	local valueNode = currentNode.value
 
 	self:_setState(snapshot.key)
+	self._steps = snapshot.steps
 	self._valueNode = if valueNode and snapshot.value then valueNode.deserialize(snapshot.value) else nil
 end
 
