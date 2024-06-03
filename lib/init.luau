@@ -6,11 +6,11 @@ local ValueNode = require(script.ValueNode)
 
 export type FSM<T> = FSM.FSM<T>
 
-export type State = Types.State
-export type StateOptions = StateNode.Options
+export type State<T> = Types.State<T>
+export type StateOptions<T> = StateNode.Options<T>
 
-export type Transition = Types.Transition
-export type TransitionOptions = TransitionNode.Options
+export type Transition<T> = Types.Transition<T>
+export type TransitionOptions<T> = TransitionNode.Options<T>
 
 export type Value<T> = Types.Value<T>
 export type ValueOptions<T> = ValueNode.Options<T>

@@ -8,27 +8,46 @@
 ## Example
 
 ```lua
--- file a (the state machine 'definition')
+-- file a
 local tinyFSM = require('path to tinyFSM')
 
-local toS2 = tinyFSM.transition.new("s2", {
-    guard = function() return math.random() < 0.5 end,
+local toAlive = tinyFSM.transition.new("alive", {})
+local toDead = tinyFSM.transition.new("dead", {
+    guard = function(character) return character.health <= 0 end,
 })
 
-local s1 = tinyFSM.state.new("s1", {
-    transitions = {toS2}
-})
-local s2 = tinyFSM.state.new("s2", {})
+local initialState = tinyFSM.state.new("alive", {
+    transitions = { toDead },
 
-return tinyFSM.init(s1)
+    onEntry = function(character) character.Health = 100 end,
+})
+tinyFSM.state.new("dead", {
+    transitions = { respawn = toAlive },
+
+    onEntry = function() print("Character died") end,
+})
+
+return tinyFSM.init(initialState)
 ```
 
 ```lua
 -- file b
-local a = require('path to file a')
+local characterFSM = require('path to file a')
 
-local fsm = a.new()
-fsm:step()
+local character = {
+    health = 100
+}
+
+local fsm = characterFSM.new()
+while true do
+    fsm:step(character)
+
+    if fsm:is("dead") then
+        task.wait(5)
+        fsm:try(fsm:canTry("respawn", character), character)
+    end
+    task.wait()
+end
 ```
 
 ## License
@@ -36,4 +55,6 @@ fsm:step()
 Distributed under the MIT License. See [LICENSE](./LICENSE) for more information.
 
 ## Acknowledgments
-Syntax is influenced by [xopxe/ahsm](https://github.com/xopxe/ahsm).
+Syntax is inspired by [xopxe/ahsm](https://github.com/xopxe/ahsm).
+
+A better name for this library would have been 'stepFSM', however it has already been uploaded to wally as 'tinyFSM'. Maybe for version 1.0, I will archive the old wally package, and reupload it as 'stepFSM'.

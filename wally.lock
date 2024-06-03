@@ -9,7 +9,7 @@ dependencies = []
 
 [[package]]
 name = "ocipa/tiny-fsm"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [["Signal", "data-oriented-house/lemonsignal@1.9.0"], ["TestEz", "roblox/testez@0.4.1"]]
 
 [[package]]

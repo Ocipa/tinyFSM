@@ -4,7 +4,9 @@ local Types = require(script.Parent.Util.Types)
 local module = {}
 
 export type Options<T> = {
-	initialValue: T,
+	value: T,
+
+	-- TODO: add guard
 
 	serialize: (value: T) -> string,
 	deserialize: (value: string) -> T,
@@ -12,7 +14,7 @@ export type Options<T> = {
 
 function module.new<T>(options: Options<T>): Types.Value<T>
 	local node = Util.freezeDeep({
-		initialValue = options.initialValue,
+		value = options.value,
 
 		serialize = options.serialize,
 		deserialize = options.deserialize,

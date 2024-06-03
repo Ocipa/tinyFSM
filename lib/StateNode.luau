@@ -4,23 +4,21 @@ local Util = require(script.Parent.Util.Util)
 
 local module = {}
 
-export type Options = {
+export type Options<T> = {
 	alias: { string }?,
 
-	onEntry: (() -> ())?,
-	onLeave: (() -> ())?,
-	-- TODO: figure out if onStep value type can be inferred
-	onStep: ((value: any) -> any)?,
+	onEntry: ((value: T) -> ())?,
+	onLeave: ((value: T) -> ())?,
+	-- TODO: figure out if onStep valueNode type can be inferred
+	onStep: ((value: T, valueNode: (value: any?) -> unknown?) -> ())?,
 
 	-- TODO: figure out if value generic type can be inferred
 	value: Types.Value<any>?,
 
-	stepThrough: boolean?,
-
-	transitions: { [number | string]: Types.Transition }?,
+	transitions: { [number | string]: Types.Transition<T> | { Types.Transition<T> } }?,
 }
 
-function module.new(key: string, options: Options?): Types.State
+function module.new<T>(key: string, options: Options<T>?): Types.State<T>
 	if NodeKeys.isKeyUsed(key) then
 		error(`State key '{key}' is already used.`)
 	end
@@ -34,8 +32,6 @@ function module.new(key: string, options: Options?): Types.State
 		onStep = if options then options.onStep else nil,
 
 		value = if options then options.value else nil,
-
-		stepThrough = if options and options.stepThrough ~= nil then options.stepThrough else true,
 
 		transitions = if options and options.transitions then options.transitions else {} :: any,
 	})

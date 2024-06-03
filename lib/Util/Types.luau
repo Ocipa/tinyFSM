@@ -1,40 +1,36 @@
 export type Snapshot = {
 	key: string,
-	steps: number,
 	value: string?,
 }
 
-export type State = {
+export type State<T> = {
 	key: string,
 	alias: { [string]: true }?,
 
-	onEntry: (() -> ())?,
-	onLeave: (() -> ())?,
+	onEntry: ((value: T) -> ())?,
+	onLeave: ((value: T) -> ())?,
 	-- TODO: figure out if onStep value type can be inferred
-	onStep: ((nodeValue: any, value: any?) -> any)?,
+	onStep: ((value: T, valueNode: (value: any?) -> unknown?) -> ())?,
 
 	-- TODO: figure out if value generic type can be inferred
 	value: Value<any>?,
 
-	stepThrough: boolean,
-
-	transitions: { [number | string]: Transition },
+	transitions: { [number | string]: Transition<T> | { Transition<T> } },
 
 	[string]: nil,
 }
 
-export type Transition = {
+export type Transition<T> = {
 	key: string,
 
 	-- TODO: figure out if guard value type can be inferred
-	guard: ((steps: number, nodeValue: any, ...unknown) -> boolean)?,
-	onTransition: (() -> ())?,
+	guard: ((value: T, valueNode: unknown?) -> boolean)?,
 
 	[string]: nil,
 }
 
 export type Value<T> = {
-	initialValue: T,
+	value: T,
 
 	serialize: (value: T) -> string,
 	deserialize: (serializedValue: string) -> T,

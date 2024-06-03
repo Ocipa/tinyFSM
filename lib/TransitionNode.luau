@@ -3,19 +3,15 @@ local Util = require(script.Parent.Util.Util)
 
 local module = {}
 
-export type Options = {
-	-- TODO: figure out if guard value type can be inferred
-	guard: ((steps: number, nodeValue: any, ...unknown) -> boolean)?,
-	onTransition: (() -> ())?,
+export type Options<T> = {
+	guard: ((value: T, valueNode: unknown?) -> boolean)?,
 }
 
-function module.new(targetKey: string, options: Options?): Types.Transition
+function module.new<T>(targetKey: string, options: Options<T>?): Types.Transition<T>
 	local state = Util.freezeDeep({
 		key = targetKey,
 
 		guard = if options then options.guard else nil,
-
-		onTransition = if options then options.onTransition else nil,
 	})
 
 	return state
