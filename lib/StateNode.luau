@@ -1,3 +1,4 @@
+local TransitionNode = require(script.Parent.TransitionNode)
 local NodeKeys = require(script.Parent.Util.NodeKeys)
 local Types = require(script.Parent.Util.Types)
 local Util = require(script.Parent.Util.Util)
@@ -15,12 +16,19 @@ export type Options<T> = {
 	-- TODO: figure out if value generic type can be inferred
 	value: Types.Value<any>?,
 
-	transitions: { [number | string]: Types.Transition<T> | { Types.Transition<T> } }?,
+	transitions: { [number | string]: Types.Transition<T> | { Types.Transition<T> } | string }?,
 }
 
 function module.new<T>(key: string, options: Options<T>?): Types.State<T>
 	if NodeKeys.isKeyUsed(key) then
 		error(`State key '{key}' is already used.`)
+	end
+
+	local transitions = if options and options.transitions then options.transitions else {} :: any
+	for i, v in transitions do
+		if typeof(v) == "string" then
+			transitions[i] = TransitionNode.new(v)
+		end
 	end
 
 	local node = Util.freezeDeep({
@@ -33,7 +41,7 @@ function module.new<T>(key: string, options: Options<T>?): Types.State<T>
 
 		value = if options then options.value else nil,
 
-		transitions = if options and options.transitions then options.transitions else {} :: any,
+		transitions = transitions,
 	})
 
 	NodeKeys.addKey(key, node)
