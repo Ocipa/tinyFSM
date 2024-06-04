@@ -6,17 +6,7 @@ local Util = require(script.Parent.Util.Util)
 local module: _Impl = {} :: _Impl
 module.__index = module
 
-function module:_recursiveStepThroughNodes(count, value)
-	if count > 128 then
-		warn(
-			"Attempted to step through more than 128 state nodes in a single "
-				.. "step. This may be caused by circular transitions, if so, "
-				.. "this can be fixed by making them not circular, by changing "
-				.. "the transition guards or setting stepThrough to false"
-		)
-		return
-	end
-
+function module:step(value)
 	local currentNode = self._nodes[self.currentKey]
 	if currentNode and currentNode.onStep then
 		currentNode.onStep(value, function(...)
@@ -38,12 +28,7 @@ function module:_recursiveStepThroughNodes(count, value)
 	local transition = self:_getFirstStepableOption(value)
 	if transition then
 		self:_setState(transition.key, value)
-		self:_recursiveStepThroughNodes(count + 1, value)
 	end
-end
-
-function module:step(value)
-	self:_recursiveStepThroughNodes(0, value)
 end
 
 function module:_getFirstStepableOption(value)
