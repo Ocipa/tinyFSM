@@ -218,6 +218,56 @@ return function()
 		end)
 	end)
 
+	describe(":getAttribute", function()
+		it("if you can get a valid attribute", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local s1 = TinyFSM.state.new(`s1{i}`, {
+				attributes = { test = 55 },
+			})
+
+			local fsm = TinyFSM.init(s1).new()
+
+			expect(fsm:getAttribute("test")).to.equal(55)
+		end)
+
+		it("if you can get an invalid attribute", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local s1 = TinyFSM.state.new(`s1{i}`)
+
+			local fsm = TinyFSM.init(s1).new()
+
+			expect(fsm:getAttribute("test")).to.equal(nil)
+		end)
+
+		it("if attributes are deep immutable", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local s1 = TinyFSM.state.new(`s1{i}`, {
+				attributes = { test = {
+					number = 2,
+				} },
+			})
+
+			local fsm = TinyFSM.init(s1).new()
+
+			expect(function()
+				local attribute = fsm:getAttribute("test")
+
+				if attribute then
+					attribute.number = 5
+				end
+			end).to.throw("attempt to modify a readonly table")
+		end)
+	end)
+
 	describe(":snapshot", function()
 		it("snapshot of a state without a value node", function()
 			-- tinyFSM expects the key of every state to be unique,

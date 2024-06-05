@@ -118,6 +118,12 @@ function module:is(key)
 	return if currentNode.alias and currentNode.alias[key] then true else false
 end
 
+function module:getAttribute(key)
+	local currentNode = self._nodes[self.currentKey]
+
+	return currentNode.attributes[key]
+end
+
 function module:snapshot()
 	local valueNode = self._nodes[self.currentKey].value
 
@@ -231,6 +237,8 @@ type Impl<T, S> = {
 	try: (self: T, key: string | false, value: S) -> (),
 
 	is: (self: T, key: string) -> boolean,
+
+	getAttribute: (self: T, key: string) -> any?,
 
 	snapshot: (self: T) -> Types.Snapshot,
 	applySnapshot: (self: T, snapshot: Types.Snapshot, value: S) -> (),

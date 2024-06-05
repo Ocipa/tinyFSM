@@ -15,6 +15,8 @@ export type State<T> = {
 	-- TODO: figure out if value generic type can be inferred
 	value: Value<any>?,
 
+	attributes: { [string]: any },
+
 	transitions: { [number | string]: Transition<T> | { Transition<T> } },
 
 	[string]: nil,
