@@ -245,6 +245,18 @@ return function()
 			expect(fsm:getAttribute("test")).to.equal(nil)
 		end)
 
+		it("if you can ':getAttribute' on a node that doesn't have attributes", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local s1 = TinyFSM.state.new(`s1{i}`, {})
+
+			local fsm = TinyFSM.init(s1).new()
+
+			expect(fsm:getAttribute("test")).to.equal(nil)
+		end)
+
 		it("if attributes are deep immutable", function()
 			-- tinyFSM expects the key of every state to be unique,
 			-- so this is used to make each key unique

@@ -43,7 +43,7 @@ function module.new<T>(key: string, options: Options<T>?): Types.State<T>
 
 		value = if options then options.value else nil,
 
-		attributes = if options then options.attributes else {} :: any,
+		attributes = if options and options.attributes then options.attributes else {},
 
 		transitions = transitions,
 	})
