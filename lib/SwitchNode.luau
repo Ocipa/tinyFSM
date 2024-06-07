@@ -7,7 +7,7 @@ local module = {}
 export type Options<T> = {
 	switch: (value: T, transitions: { [string]: Types.Transition<T> }) -> Types.Transition<T>?,
 
-	transitions: { [string]: Types.Transition<T> },
+	transitions: { [string]: Types.Transition<T> | string },
 }
 
 function module.new<T>(options: Options<T>): Types.Switch<T>
