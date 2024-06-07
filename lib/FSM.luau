@@ -1,4 +1,6 @@
 local Signal = require(script.Parent.Parent.Signal)
+local SwitchNode = require(script.Parent.SwitchNode)
+local TransitionNode = require(script.Parent.TransitionNode)
 local NodeKeys = require(script.Parent.Util.NodeKeys)
 local Types = require(script.Parent.Util.Types)
 local Util = require(script.Parent.Util.Util)
@@ -34,15 +36,22 @@ end
 function module:_getFirstStepableOption(value)
 	local currentNode = self._nodes[self.currentKey]
 
-	for _, transitionNode in ipairs(currentNode.transitions :: { Types.Transition<any> }) do
+	for _, node in ipairs(currentNode.transitions :: { Types.Transition<any> | Types.Switch<any> }) do
+		local transitionNode: Types.Transition<any>? = node :: Types.Transition<any>
+
+		if SwitchNode.is(node) then
+			local switchNode = node :: Types.Switch<any>
+			transitionNode = switchNode.switch(value, switchNode.transitions)
+		end
+
 		local available = true
 
-		if transitionNode.guard ~= nil then
+		if transitionNode and transitionNode.guard ~= nil then
 			available = transitionNode.guard(value, self._value)
 		end
 
 		if available then
-			return transitionNode
+			return transitionNode :: Types.Transition<any>
 		end
 	end
 
@@ -56,27 +65,21 @@ function module:canTry(key, value)
 		return false
 	end
 
-	-- if transition has 'key', then it is a transition, if not, then it is a
-	-- list of transitions
-	if (transition :: any)["key"] then
-		local singleTransition = transition :: Types.Transition<any>
+	local transitionNode: Types.Transition<any>? = transition :: Types.Transition<any>
 
-		if singleTransition.guard ~= nil then
-			if not singleTransition.guard(value, self._value) then
-				return false
-			end
-		end
+	if SwitchNode.is(transition) then
+		local switchNode = transition :: Types.Switch<any>
 
-		return singleTransition.key
-	else
-		for _, v in transition :: { Types.Transition<any> } do
-			if v.guard == nil or v.guard(value, self._value) == true then
-				return v.key
-			end
-		end
-
-		return false
+		transitionNode = switchNode.switch(value, switchNode.transitions)
 	end
+
+	if transitionNode and transitionNode.guard ~= nil then
+		if not transitionNode.guard(value, self._value) then
+			return false
+		end
+	end
+
+	return if transitionNode then transitionNode.key else false
 end
 
 function module:try(key, value)
@@ -151,32 +154,32 @@ local function recursiveFindStateNodes(
 
 	if node.transitions then
 		for _, transition in node.transitions do
-			if (transition :: any)["key"] then
-				local singleTransition = transition :: Types.Transition<any>
+			if TransitionNode.is(transition) then
+				local transitionNode = transition :: Types.Transition<any>
 
-				if nodes[singleTransition.key] then
+				if nodes[transitionNode.key] then
 					continue
 				end
 
-				local nodeOfKey = NodeKeys.getNodeFromKey(singleTransition.key)
+				local nodeOfKey = NodeKeys.getNodeFromKey(transitionNode.key)
 				if not nodeOfKey then
-					error(`Node not found for key '{singleTransition.key}'`)
+					error(`Node not found for key '{transitionNode.key}'`)
 				end
 
-				nodes[singleTransition.key] = nodeOfKey
 				recursiveFindStateNodes(nodeOfKey, nodes)
-			else
-				for _, v in transition :: { Types.Transition<any> } do
-					if nodes[v.key] then
+			elseif SwitchNode.is(transition) then
+				local switchNode = transition :: Types.Switch<any>
+
+				for _, transitionNode in switchNode.transitions do
+					if nodes[transitionNode.key] then
 						continue
 					end
 
-					local nodeOfKey = NodeKeys.getNodeFromKey(v.key)
+					local nodeOfKey = NodeKeys.getNodeFromKey(transitionNode.key)
 					if not nodeOfKey then
-						error(`Node not found for key '{v.key}'`)
+						error(`Node not found for key '{transitionNode.key}'`)
 					end
 
-					nodes[v.key] = nodeOfKey
 					recursiveFindStateNodes(nodeOfKey, nodes)
 				end
 			end

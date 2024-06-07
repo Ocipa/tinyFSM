@@ -14,10 +14,16 @@ export type State<T> = {
 
 	-- TODO: figure out if value generic type can be inferred
 	value: Value<any>?,
-
 	attributes: { [string]: any },
 
-	transitions: { [number | string]: Transition<T> | { Transition<T> } },
+	transitions: { [number | string]: Transition<T> | Switch<T> },
+
+	[string]: nil,
+}
+
+export type Switch<T> = {
+	switch: (value: T, transitions: { Transition<T> }) -> Transition<T>?,
+	transitions: { Transition<T> },
 
 	[string]: nil,
 }

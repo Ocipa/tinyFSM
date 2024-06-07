@@ -23,6 +23,68 @@ return function()
 			expect(fsm.currentKey).to.equal(`s2{i}`)
 		end)
 
+		it("if a switch node handles a valid transition", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local toS2 = TinyFSM.transition.new(`s2{i}`, {
+				guard = function()
+					return false
+				end,
+			})
+			local toS3 = TinyFSM.transition.new(`s3{i}`)
+
+			local s1 = TinyFSM.state.new(`s1{i}`, {
+				transitions = {
+					TinyFSM.switch.new({
+						switch = function(value: any, transitions)
+							return transitions[2]
+						end,
+
+						transitions = { toS2, toS3 },
+					}),
+				},
+			})
+
+			TinyFSM.state.new(`s2{i}`)
+			TinyFSM.state.new(`s3{i}`)
+
+			local fsm = TinyFSM.init(s1).new()
+			fsm:step()
+			expect(fsm:is(`s3{i}`)).to.equal(true)
+		end)
+
+		it("if a switch node handles no valid transitions", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local toS2 = TinyFSM.transition.new(`s2{i}`, {
+				guard = function()
+					return false
+				end,
+			})
+
+			local s1 = TinyFSM.state.new(`s1{i}`, {
+				transitions = {
+					TinyFSM.switch.new({
+						switch = function(value: any, transitions)
+							return transitions[1]
+						end,
+
+						transitions = { toS2 },
+					}),
+				},
+			})
+
+			TinyFSM.state.new(`s2{i}`)
+
+			local fsm = TinyFSM.init(s1).new()
+			fsm:step()
+			expect(fsm:is(`s1{i}`)).to.equal(true)
+		end)
+
 		it("if value gets passed when stepping", function()
 			-- tinyFSM expects the key of every state to be unique,
 			-- so this is used to make each key unique
@@ -69,31 +131,73 @@ return function()
 			-- so this is used to make each key unique
 			local i = HttpService:GenerateGUID(false)
 
-			local s1 = TinyFSM.state.new(`s1{i}`, { transitions = {} })
+			local s1 = TinyFSM.state.new(`s1{i}`)
 
 			local fsm = TinyFSM.init(s1).new()
 
 			expect(fsm:canTry("invalidTransition")).to.equal(false)
 		end)
 
-		it("if a valid option of multiple options can be tried", function()
+		it("if a switch node handles a valid transition", function()
 			-- tinyFSM expects the key of every state to be unique,
 			-- so this is used to make each key unique
 			local i = HttpService:GenerateGUID(false)
 
-			local t1 = TinyFSM.transition.new(`s1{i}`, {
+			local toS2 = TinyFSM.transition.new(`s2{i}`, {
 				guard = function()
 					return false
 				end,
 			})
-			local t2 = TinyFSM.transition.new(`s2{i}`)
+			local toS3 = TinyFSM.transition.new(`s3{i}`)
 
-			local s1 = TinyFSM.state.new(`s1{i}`, { transitions = { t1 = { t1, t2 } } })
+			local s1 = TinyFSM.state.new(`s1{i}`, {
+				transitions = {
+					t2 = TinyFSM.switch.new({
+						switch = function(value: any, transitions)
+							return transitions[2]
+						end,
+
+						transitions = { toS2, toS3 },
+					}),
+				},
+			})
+
+			TinyFSM.state.new(`s2{i}`)
+			TinyFSM.state.new(`s3{i}`)
+
+			local fsm = TinyFSM.init(s1).new()
+
+			expect(fsm:canTry("t2")).to.equal(`s3{i}`)
+		end)
+
+		it("if a switch node handles no valid transitions", function()
+			-- tinyFSM expects the key of every state to be unique,
+			-- so this is used to make each key unique
+			local i = HttpService:GenerateGUID(false)
+
+			local toS2 = TinyFSM.transition.new(`s2{i}`, {
+				guard = function()
+					return false
+				end,
+			})
+
+			local s1 = TinyFSM.state.new(`s1{i}`, {
+				transitions = {
+					t2 = TinyFSM.switch.new({
+						switch = function(value: any, transitions)
+							return transitions[1]
+						end,
+
+						transitions = { toS2 },
+					}),
+				},
+			})
+
 			TinyFSM.state.new(`s2{i}`)
 
 			local fsm = TinyFSM.init(s1).new()
 
-			expect(fsm:canTry("t1")).to.equal(`s2{i}`)
+			expect(fsm:canTry("t3")).to.equal(false)
 		end)
 
 		it("if value gets passed to the guard", function()

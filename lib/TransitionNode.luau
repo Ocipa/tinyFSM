@@ -17,4 +17,9 @@ function module.new<T>(targetKey: string, options: Options<T>?): Types.Transitio
 	return state
 end
 
+-- TODO: add a node type to nodes, and then use that here
+function module.is(value: any): boolean
+	return typeof(value) == "table" and value.key ~= nil
+end
+
 return module

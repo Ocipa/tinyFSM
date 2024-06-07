@@ -15,10 +15,9 @@ export type Options<T> = {
 
 	-- TODO: figure out if value generic type can be inferred
 	value: Types.Value<any>?,
-
 	attributes: { [string]: any }?,
 
-	transitions: { [number | string]: Types.Transition<T> | { Types.Transition<T> } | string }?,
+	transitions: { [number | string]: Types.Transition<T> | Types.Switch<T> | string }?,
 }
 
 function module.new<T>(key: string, options: Options<T>?): Types.State<T>
