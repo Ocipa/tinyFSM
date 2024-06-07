@@ -5,9 +5,9 @@ local Util = require(script.Parent.Util.Util)
 local module = {}
 
 export type Options<T> = {
-	switch: (value: T, transitions: { Types.Transition<T> }) -> Types.Transition<T>?,
+	switch: (value: T, transitions: { [string]: Types.Transition<T> }) -> Types.Transition<T>?,
 
-	transitions: { Types.Transition<T> },
+	transitions: { [string]: Types.Transition<T> },
 }
 
 function module.new<T>(options: Options<T>): Types.Switch<T>

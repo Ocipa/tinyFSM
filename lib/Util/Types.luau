@@ -22,8 +22,8 @@ export type State<T> = {
 }
 
 export type Switch<T> = {
-	switch: (value: T, transitions: { Transition<T> }) -> Transition<T>?,
-	transitions: { Transition<T> },
+	switch: (value: T, transitions: { [string]: Transition<T> }) -> Transition<T>?,
+	transitions: { [string]: Transition<T> },
 
 	[string]: nil,
 }

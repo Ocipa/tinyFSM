@@ -39,10 +39,10 @@ return function()
 				transitions = {
 					TinyFSM.switch.new({
 						switch = function(value: any, transitions)
-							return transitions[2]
+							return transitions["t3"]
 						end,
 
-						transitions = { toS2, toS3 },
+						transitions = { t2 = toS2, t3 = toS3 },
 					}),
 				},
 			})
@@ -70,10 +70,10 @@ return function()
 				transitions = {
 					TinyFSM.switch.new({
 						switch = function(value: any, transitions)
-							return transitions[1]
+							return transitions["t2"]
 						end,
 
-						transitions = { toS2 },
+						transitions = { t2 = toS2 },
 					}),
 				},
 			})
@@ -154,10 +154,10 @@ return function()
 				transitions = {
 					t2 = TinyFSM.switch.new({
 						switch = function(value: any, transitions)
-							return transitions[2]
+							return transitions["t3"]
 						end,
 
-						transitions = { toS2, toS3 },
+						transitions = { t2 = toS2, t3 = toS3 },
 					}),
 				},
 			})
@@ -185,10 +185,10 @@ return function()
 				transitions = {
 					t2 = TinyFSM.switch.new({
 						switch = function(value: any, transitions)
-							return transitions[1]
+							return transitions["t2"]
 						end,
 
-						transitions = { toS2 },
+						transitions = { t2 = toS2 },
 					}),
 				},
 			})
